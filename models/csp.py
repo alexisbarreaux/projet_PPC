@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from custom_types_definitions import domain, constraint
+from constants import domain, constraint
 
 
 class CSP:
