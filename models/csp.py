@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from constants import domain, constraint
 
 
@@ -20,13 +18,13 @@ class CSP:
 
     variables: list[str]
     domains: dict[str, domain]
-    constraints: dict[Tuple(str, str), constraint]
+    constraints: dict[(str, str), constraint]
 
     def __init__(
         self,
         variables: list[str],
         domains: dict[str, domain],
-        constraints: dict[Tuple(str, str), constraint],
+        constraints: dict[(str, str), constraint],
     ) -> None:
         self.variables = variables
         self.domains = domains

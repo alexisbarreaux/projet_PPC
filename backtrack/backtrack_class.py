@@ -6,7 +6,7 @@ from .variables_choosing_algorithms import naive_variable_choosing
 from .values_ordering_algorithms import naive_values_ordering
 
 
-class BacktrackSetup:
+class BacktrackClass:
     """
     This is a wrapper around the backtrack function in itself to be able to choose
     different methods of selecting next node, value, etc.
@@ -32,21 +32,21 @@ class BacktrackSetup:
         self.next_values_ordering_method = next_values_ordering_method
         return
 
-    def check_new_state_constraint_violation(
+    def check_new_state_is_valid(
         self, csp_instance: CSP, state: dict, new_variable: str
     ):
         """
         If the previous state was valid, only constraints between the variable which now has a value
         and the previous ones can be violated.
         """
-        new_variable_value = state[new_variable]
         # At the start, no variable was added and thus no constraint is wrong.
         if new_variable is None:
             return True
 
         else:
+            new_variable_value = state[new_variable]
             # For each variable (including the new one but this isn't an issue)
-            for variable in state.keys:
+            for variable in state.keys():
                 # Try to get the constraint, it can be stored either with the key (variable, new_variable) or the
                 # (new_variable, variable) one.
                 if (
@@ -87,7 +87,7 @@ class BacktrackSetup:
         It returns a boolean and the current state.
         """
         # Check if a constraint is invalid
-        if self.check_new_state_constraint_violation(
+        if not self.check_new_state_is_valid(
             csp_instance=csp_instance, state=state, new_variable=new_variable
         ):
             return False, state
@@ -108,11 +108,13 @@ class BacktrackSetup:
             # Copy the state dict to be able to call recurisvely without issue
             new_state = state.copy()
             new_state.update({new_variable: new_variable_possible_value})
-            if self.backtrack(
+
+            child_result, child_state = self.backtrack(
                 csp_instance=csp_instance, state=new_state, new_variable=new_variable
-            ):
+            )
+            if child_result:
                 # If a sub node has a solution, go back up and return true
-                return True, new_state
+                return True, child_state
 
         # If no sub nodes was true, return false
         return False, state
