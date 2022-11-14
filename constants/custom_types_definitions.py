@@ -9,4 +9,4 @@ Domain = list[VariableValue]
 Domains = dict[Variable, Domain]
 # Variables
 Constraint = list[Tuple[VariableValue, VariableValue]]
-Constraints = dict[(Variable, Variable), Constraint]
+Constraints = dict[Tuple[Variable, Variable], Constraint]
