@@ -20,12 +20,15 @@ def alldiff(csp_instance: CSP) -> Constraints:
     Builds diff constraints for each couple of variables.
     """
     constraints: Constraints = {}
-    for variable_1 in csp_instance.domains.keys:
-        for variable_2 in csp_instance.domains.keys:
-            if variable_1 != variable_2:
-                constraints[(variable_1, variable_2)] = diff(
-                    domain_1=csp_instance.domains[variable_1],
-                    domain_2=csp_instance.domains[variable_2],
-                )
+    number_of_variables = len(csp_instance.variables)
+    for i in range(number_of_variables):
+        for j in range(i + 1, number_of_variables):
+            variable_1 = csp_instance.variables[i]
+            variable_2 = csp_instance.variables[j]
+            # Adding new constraint
+            constraints[(variable_1, variable_2)] = diff(
+                domain_1=csp_instance.domains[variable_1],
+                domain_2=csp_instance.domains[variable_2],
+            )
 
     return constraints
