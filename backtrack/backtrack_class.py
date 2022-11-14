@@ -1,7 +1,8 @@
 # Main file for the backtrack algorithm.
-from typing import Union, Callable
+from typing import Callable, Tuple
 
 from models import CSP
+from constants import Variable
 from .variables_choosing_algorithms import naive_variable_choosing
 from .values_ordering_algorithms import naive_values_ordering
 
@@ -33,7 +34,7 @@ class BacktrackClass:
         return
 
     def check_new_state_is_valid(
-        self, csp_instance: CSP, state: dict, new_variable: str
+        self, csp_instance: CSP, state: dict, new_variable: Variable
     ):
         """
         If the previous state was valid, only constraints between the variable which now has a value
@@ -44,7 +45,7 @@ class BacktrackClass:
             return True
 
         else:
-            new_variable_value = state[new_variable]
+            new_VariableValue = state[new_variable]
             # For each variable (including the new one but this isn't an issue)
             for variable in state.keys():
                 # Try to get the constraint, it can be stored either with the key (variable, new_variable) or the
@@ -55,8 +56,8 @@ class BacktrackClass:
                     )
                 ) is not None:
                     # If the constraint exists, see if it holds
-                    variable_value = state[variable]
-                    if not (variable_value, new_variable_value) in constraint_to_check:
+                    VariableValue = state[variable]
+                    if not (VariableValue, new_VariableValue) in constraint_to_check:
                         return False
 
                 elif (
@@ -65,15 +66,15 @@ class BacktrackClass:
                     )
                 ) is not None:
                     # If the constraint exists, see if it holds
-                    variable_value = state[variable]
-                    if not (new_variable_value, variable_value) in constraint_to_check:
+                    VariableValue = state[variable]
+                    if not (new_VariableValue, VariableValue) in constraint_to_check:
                         return False
             # At the end if no new constraint is False, then they are all True.
             return True
 
     def backtrack(
-        self, csp_instance: CSP, state: dict, new_variable: str = None
-    ) -> Union[bool, dict]:
+        self, csp_instance: CSP, state: dict, new_variable: Variable = None
+    ) -> Tuple[bool, dict]:
         """
         A backtrack takes a CSP and a current state (variables that currently hold values). We also put the
         last added variable in new_variable because it makes check violations easier.

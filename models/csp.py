@@ -1,4 +1,4 @@
-from constants import domain, constraint
+from constants import Domains, Constraints, Variables
 
 
 class CSP:
@@ -16,15 +16,15 @@ class CSP:
 
     """
 
-    variables: list[str]
-    domains: dict[str, domain]
-    constraints: dict[(str, str), constraint]
+    variables: Variables
+    domains: Domains
+    constraints: Constraints
 
     def __init__(
         self,
-        variables: list[str],
-        domains: dict[str, domain],
-        constraints: dict[(str, str), constraint],
+        variables: Variables,
+        domains: Domains,
+        constraints: Constraints,
     ) -> None:
         self.variables = variables
         self.domains = domains

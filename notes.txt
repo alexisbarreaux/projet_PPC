@@ -1,0 +1,3 @@
+The way our CSP is coded, one will have to get the domain and constraints
+by checking if a string is a key of a dict. So we put the part that changes
+from a variable to the next first, in order to check more quickly

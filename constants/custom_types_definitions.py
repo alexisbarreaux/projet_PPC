@@ -1,5 +1,12 @@
 from typing import Union, Tuple
 
-variable_value = Union[float, int]
-domain = list[variable_value]
-constraint = list[Tuple[variable_value, variable_value]]
+# Variables
+Variable = str
+Variables = list[str]
+VariableValue = Union[float, int]
+# domains
+Domain = list[VariableValue]
+Domains = dict[Variable, Domain]
+# Variables
+Constraint = list[Tuple[VariableValue, VariableValue]]
+Constraints = dict[(Variable, Variable), Constraint]
