@@ -30,6 +30,22 @@ class CSP:
         self.domains = domains
         self.constraints = constraints
 
+    def __str__(self):
+        """
+        Used to modify display. This string is the one seen when using print(my_csp_instance)
+        """
+        str_representation = f"Variables:\n{self.variables}\n"
+
+        str_representation += "\nDomains:\n"
+        for variable, domain in self.domains.items():
+            str_representation += f"{variable} : {domain}\n"
+
+        str_representation += "\nConstraints:\n"
+        for var_tuple, constraint in self.constraints.items():
+            str_representation += f"{var_tuple} : {constraint}\n"
+
+        return str_representation
+
     def add_constraint(
         self, variable_1: Variable, variable_2: Variable, new_constraint: Constraint
     ) -> None:
