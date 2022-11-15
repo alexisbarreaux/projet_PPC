@@ -1,4 +1,4 @@
-from constants import Domains, Constraints, Variables
+from constants import Domains, Constraints, Variable, Variables, Constraint
 
 
 class CSP:
@@ -29,3 +29,32 @@ class CSP:
         self.variables = variables
         self.domains = domains
         self.constraints = constraints
+
+    def add_constraint(
+        self, variable_1: Variable, variable_2: Variable, new_constraint: Constraint
+    ) -> None:
+        """
+        Add a constraint to the CSP. If no constraint exists on the variables, just put
+        it in the dict. Else, intersect with current constraint.
+        """
+        # Test first possible order
+        if (
+            current_constraint := self.constraints.get((variable_1, variable_2), None)
+        ) is not None:
+            # If the current one exist, intersect current and new.
+            self.constraints[
+                (variable_1, variable_2)
+            ] = current_constraint.intersection(new_constraint)
+        # Then second order
+        elif (
+            current_constraint := self.constraints.get((variable_2, variable_1), None)
+        ) is not None:
+            # If the current one exist, intersect current and new.
+            self.constraints[
+                (variable_2, variable_1)
+            ] = current_constraint.intersection(new_constraint)
+        else:
+            # If no current constraint exists, then just put the new constraint as is.
+            self.constraints[(variable_1, variable_2)] = new_constraint
+
+        return
