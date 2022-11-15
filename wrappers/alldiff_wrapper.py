@@ -1,4 +1,4 @@
-from constants import Domain, Domains, Constraint, Constraints
+from constants import Domain, Constraint, Constraints
 from models import CSP
 
 
