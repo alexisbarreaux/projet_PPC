@@ -34,7 +34,7 @@ class CSP:
         self, variable_1: Variable, variable_2: Variable, new_constraint: Constraint
     ) -> None:
         """
-        Add a constraint to the CSP. If no constraint exists on the variables, just put
+        Add a single constraint to the CSP. If no constraint exists on the variables, just put
         it in the dict. Else, intersect with current constraint.
         """
         # Test first possible order
@@ -57,4 +57,14 @@ class CSP:
             # If no current constraint exists, then just put the new constraint as is.
             self.constraints[(variable_1, variable_2)] = new_constraint
 
+        return
+
+    def add_constraints(self, new_constraints: dict) -> None:
+        """
+        Adds a new bunch of constraints stored as a dict in the CSP.
+        """
+        for (variable_1, variable_2), constraint in new_constraints.items():
+            self.add_constraint(
+                variable_1=variable_1, variable_2=variable_2, new_constraint=constraint
+            )
         return
