@@ -8,5 +8,5 @@ VariableValue = Union[float, int]
 Domain = list[VariableValue]
 Domains = dict[Variable, Domain]
 # Variables
-Constraint = list[Tuple[VariableValue, VariableValue]]
+Constraint = set[Tuple[VariableValue, VariableValue]]
 Constraints = dict[Tuple[Variable, Variable], Constraint]

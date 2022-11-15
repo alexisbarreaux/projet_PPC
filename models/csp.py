@@ -10,7 +10,7 @@ class CSP:
             a list
         - each domain is a list of the possible values taken. They are stored in a dict since
             our variables are strings.
-        - each constraint is a list of tuples of admissibles variables values for the variables
+        - each constraint is a set of tuples of admissibles variables values for the variables
             of the constraint. They are stored in a dict whose key is the tuple (variable_1, variable_2)
             and whose value is the possible values of said variables.
 
