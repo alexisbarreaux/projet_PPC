@@ -3,3 +3,8 @@ by checking if a string is a key of a dict. So we put the part that changes
 from a variable to the next first, in order to check more quickly
 
 Switching constraint to set to be able to handle intersections more cleanly
+
+Do we need to actually store the tuples for the constraint ? Should we reduce domain once constraints are generated ? If size
+of a constraint is far of domain_1 * domain_2 we should be able to cut.
+Should we first build the lambdas and only at the end create the tuples and cut the
+domains ?
