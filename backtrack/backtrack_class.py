@@ -18,22 +18,33 @@ class BacktrackClass:
         - next_values_ordering_method (Callable): the function used to order the values and know in
             which order to test them.. It takes the CSP and new variable as input. It defaults to the
             naive order where we just take the next varaible's domain.
+        - optimization_state_evaluation (Callable): a function to choose between two states when working on an optimization
+            (and not decision) problem.
 
     """
 
     next_variable_choosing_method: Callable
     next_values_ordering_method: Callable
+    # Variables for optimisation problems
+    optimization_state_evaluation: Callable
+    optimization_value_comparison: Callable
+    best_known_state: dict
+    best_known_value: float
 
     def __init__(
         self,
         next_variable_choosing_method: Callable = naive_variable_choosing,
         next_values_ordering_method: Callable = naive_values_ordering,
+        optimization_state_evaluation: Callable = None,
+        optimization_value_comparison: Callable = lambda x, y: x < y,
     ) -> None:
         self.next_variable_choosing_method = next_variable_choosing_method
         self.next_values_ordering_method = next_values_ordering_method
+        self.optimization_state_evaluation = optimization_state_evaluation
+        self.optimization_value_comparison = optimization_value_comparison
         return
 
-    def check_new_state_is_valid(
+    def check_if_new_state_is_valid(
         self, csp_instance: CSP, state: dict, new_variable: Variable
     ):
         """
@@ -72,10 +83,11 @@ class BacktrackClass:
             # At the end if no new constraint is False, then they are all True.
             return True
 
-    def backtrack(
+    def _backtrack(
         self, csp_instance: CSP, state: dict, new_variable: Variable = None
     ) -> Tuple[bool, dict]:
         """
+        This is the decision kind. It will return back the first possible solution.
         A backtrack takes a CSP and a current state (variables that currently hold values). We also put the
         last added variable in new_variable because it makes check violations easier.
 
@@ -88,7 +100,7 @@ class BacktrackClass:
         It returns a boolean and the current state.
         """
         # Check if a constraint is invalid
-        if not self.check_new_state_is_valid(
+        if not self.check_if_new_state_is_valid(
             csp_instance=csp_instance, state=state, new_variable=new_variable
         ):
             return False, state
@@ -110,7 +122,7 @@ class BacktrackClass:
             new_state = state.copy()
             new_state.update({new_variable: new_variable_possible_value})
 
-            child_result, child_state = self.backtrack(
+            child_result, child_state = self._backtrack(
                 csp_instance=csp_instance, state=new_state, new_variable=new_variable
             )
             if child_result:
@@ -119,3 +131,71 @@ class BacktrackClass:
 
         # If no sub nodes was true, return false
         return False, state
+
+    def run_backtrack(self, csp_instance: CSP) -> Tuple[bool, dict]:
+        return self._backtrack(csp_instance=csp_instance, state=dict())
+
+    def _check_if_state_is_better_optimization(self, new_state: dict) -> None:
+        """
+        When encountering a valid state for an optimization problem,
+        store it with this function if it is better than the current one.
+        """
+        if self.best_known_state is None or self.optimization_value_comparison(
+            self.best_known_value,
+            (new_value := self.optimization_state_evaluation(new_state)),
+        ):
+            self.best_known_state = new_state
+            self.best_known_value = new_value
+        return
+
+    def _reset_optimization_variables(self) -> None:
+        self.best_known_value = None
+        self.best_known_state = None
+        return
+
+    def _backtrack_optimization(
+        self, csp_instance: CSP, state: dict, new_variable: Variable = None
+    ) -> None:
+        """
+        This is the optimization kind. It will return back the best possible solution and thus
+        explore the tree for a longer time.
+        It returns a boolean and the first found optimal state.
+        """
+        # Check if a constraint is invalid
+        if not self.check_if_new_state_is_valid(
+            csp_instance=csp_instance, state=state, new_variable=new_variable
+        ):
+            return
+        # If the current state is complete (all variables have values), evaluate it.
+        if len(state) == len(csp_instance.variables):
+            self._check_if_state_is_better_optimization(new_state=state)
+            return
+
+        # Otherwise, choose a new variable to add to state
+        new_variable = self.next_variable_choosing_method(
+            csp_instance=csp_instance, state=state
+        )
+        # Compute the order in which to test the possible values
+        new_variable_values_order = self.next_values_ordering_method(
+            csp_instance=csp_instance, new_variable=new_variable
+        )
+
+        for new_variable_possible_value in new_variable_values_order:
+            # Copy the state dict to be able to call recurisvely without issue
+            new_state = state.copy()
+            new_state.update({new_variable: new_variable_possible_value})
+
+            # Don't need to check child as we will be exploring all valid edges.
+            self._backtrack_optimization(
+                csp_instance=csp_instance, state=new_state, new_variable=new_variable
+            )
+
+        return
+
+    def run_optimization_backtrack(self, csp_instance: CSP) -> Tuple[float, dict]:
+        """
+        Actual function to be called to run a backtrack for an optimization problem.
+        """
+        self._reset_optimization_variables()
+        self._backtrack_optimization(csp_instance=csp_instance, state=dict())
+        return self.best_known_value, self.best_known_state
