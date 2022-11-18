@@ -8,3 +8,10 @@ Do we need to actually store the tuples for the constraint ? Should we reduce do
 of a constraint is far of domain_1 * domain_2 we should be able to cut.
 Should we first build the lambdas and only at the end create the tuples and cut the
 domains ?
+
+We need to switch constraints to function only, if there is a need to have a tuple, one can always check if (a,b) in []
+as a function.
+
+For the optimization problem, we stay in decision but do a dichotomy on the values.
+
+Switching Domains to a list of domain and constraint to a dict with keys on indices.
