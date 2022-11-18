@@ -3,7 +3,7 @@ from pathlib import Path
 from models import CSP
 from .instances_utils import read_instance_edge_line
 
-from wrappers import lambda_wrapper_for_a_couple_of_variables
+lambda_wrapper_for_a_couple_of_variables = None
 
 
 def coloring_optimization_problem(graph_path: Path) -> CSP:

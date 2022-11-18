@@ -1,6 +1,13 @@
 from typing import Tuple
 
-from constants import Domains, Constraints, Variable, Variables, Constraint
+from constants import (
+    Domains,
+    Constraints,
+    Variable,
+    Variables,
+    Constraint,
+    VariableValue,
+)
 
 
 class CSP:
@@ -25,6 +32,7 @@ class CSP:
     domains: Domains
     constraints: Constraints
 
+    # Building functions
     def __init__(
         self,
         variables: Variables,
@@ -38,6 +46,16 @@ class CSP:
             variables[index]: index for index in range(len(variables))
         }
 
+    def build_tuples_from_constraint(
+        self, index_variable_1: int, index_variable_2: int, constraint: Constraint
+    ) -> list[Tuple[VariableValue, VariableValue]]:
+        return [
+            (value_var_1, value_var_2)
+            for value_var_1 in self.domains[index_variable_1]
+            for value_var_2 in self.domains[index_variable_2]
+            if constraint(index_variable_1, index_variable_2, value_var_1, value_var_2)
+        ]
+
     def __str__(self):
         """
         Used to modify display. This string is the one seen when using print(my_csp_instance)
@@ -49,10 +67,8 @@ class CSP:
             str_representation += f"{self.variables[index]} : {self.domains[index]}\n"
 
         str_representation += "\nConstraints:\n"
-        for (i, j), _ in self.constraints.items():
-            str_representation += (
-                f"{(self.variables[i], self.variables[j])}  have constraints.\n"
-            )
+        for (i, j), constraint in self.constraints.items():
+            str_representation += f"{(self.variables[i], self.variables[j])}  {self.build_tuples_from_constraint(i, j, constraint)}.\n"
 
         return str_representation
 
@@ -86,7 +102,7 @@ class CSP:
             return index_variable_1, index_variable_2, new_constraint
 
     def combine_two_constraints(
-        current_constraint: Constraint, new_constraint: Constraint
+        self, current_constraint: Constraint, new_constraint: Constraint
     ) -> Constraint:
         """
         This function combines two constraint on the same variables to build a new one.
@@ -121,7 +137,7 @@ class CSP:
                 index_variable_1=index_variable_1, index_variable_2=index_variable_2
             )
         ) is not None:
-            # If the current one exists, make an and with new one.
+            # If the current one exists, make a logical "and" with the new one.
             self.constraints[
                 (index_variable_1, index_variable_2)
             ] = self.combine_two_constraints(
@@ -158,3 +174,30 @@ class CSP:
                 new_constraint=constraint,
             )
         return
+
+    # Backtrack functions
+    def get_linked_constraints(
+        self, variable_index: int
+    ) -> list[Tuple[(bool, int, Constraint)]]:
+        """
+        This function returns the constraints linked to a variable in a list of tuples, the first
+        element is a boolean saying wether the index given as an argument is the first of the key,
+        the second is the index of the linked variable and the last is the constraint itself.
+        So basically:
+            (is_variable_index_first, other_index, constraint)
+        """
+        linked_constraints = []
+        # Check variables Var_i with i smaller
+        for other_index in range(variable_index):
+            if (
+                constraint := self.constraints.get((other_index, variable_index), None)
+            ) is not None:
+                linked_constraints.append((False, other_index, constraint))
+        # And then check the bigger ones
+        for other_index in range(variable_index + 1, len(self.variables)):
+            if (
+                constraint := self.constraints.get((other_index, variable_index), None)
+            ) is not None:
+                linked_constraints.append((True, other_index, constraint))
+
+        return linked_constraints
