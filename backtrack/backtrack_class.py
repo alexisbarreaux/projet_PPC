@@ -140,6 +140,7 @@ class BacktrackClass:
         When encountering a valid state for an optimization problem,
         store it with this function if it is better than the current one.
         """
+        print(self.best_known_value, self.best_known_state is None)
         if self.best_known_state is None or self.optimization_value_comparison(
             self.best_known_value,
             (new_value := self.optimization_state_evaluation(new_state)),

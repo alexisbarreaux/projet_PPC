@@ -1,3 +1,4 @@
 from .coloring_instances import COLORING_INSTANCES_PATH, COLORING_INSTANCES
+from .coloring import coloring_optimization_problem
 from .instances_utils import read_single_problem_from_path_as_adjacency
 from .n_queens import n_queens_problem
