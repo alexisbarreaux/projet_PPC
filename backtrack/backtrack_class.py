@@ -60,35 +60,23 @@ class BacktrackClass:
             return True
 
         else:
-            linked_constraints = csp_instance.get_linked_constraints(
-                variable_index=last_variable_index
-            )
-            last_variable_value = state[csp_instance.variables[last_variable_index]]
-
-            # For each constraint check it, if one is false directly return false
-            for is_last_index_first, other_index, constraint in linked_constraints:
-                other_variable_value = state[csp_instance.variables[other_index]]
-                if is_last_index_first:
-                    if constraint(
-                        last_variable_index,
-                        other_index,
-                        last_variable_value,
-                        other_variable_value,
-                    ):
-                        # If the constraint was valid in this order, go to next constraint
-                        continue
-                elif constraint(
-                    other_index,
-                    last_variable_index,
-                    other_variable_value,
-                    last_variable_value,
-                ):
-                    # If the constraint was valid in this order, go to next constraint
-                    continue
-                else:
-                    # If the constraint was not valid, directly return False
-                    return False
-
+            last_variable_value = state[last_variable_index]
+            for other_variable_index in state:
+                other_variable_value = state[other_variable_index]
+                if other_variable_index != last_variable_index:
+                    if (
+                        constraint := csp_instance.constraints.get(
+                            (last_variable_index, other_variable_index), None
+                        )
+                    ) is not None:
+                        if not constraint(
+                            last_variable_index,
+                            other_variable_index,
+                            last_variable_value,
+                            other_variable_value,
+                        ):
+                            # If the constraint was not valid, directly return False
+                            return False
             return True
 
     def _backtrack(
@@ -102,7 +90,7 @@ class BacktrackClass:
         The backtrack first checks if the current state is valid, and if not returns False.
         Otherwise it appends a new value for the next variable to the state and moves on recursively.
 
-        The state is depicted as a dict, in which keys are variables names and values the value of
+        The state is depicted as a dict, in which keys are variables idexes and values the value of
         each variable. A variable which currently holds no value is not in the dict.
 
         It returns a boolean and the current state.
@@ -130,13 +118,7 @@ class BacktrackClass:
         for new_variable_possible_value in new_variable_values_order:
             # Copy the state dict to be able to call recurisvely without issue
             new_state = state.copy()
-            new_state.update(
-                {
-                    csp_instance.variables[
-                        last_variable_index
-                    ]: new_variable_possible_value
-                }
-            )
+            new_state.update({last_variable_index: new_variable_possible_value})
 
             child_result, child_state = self._backtrack(
                 csp_instance=csp_instance,
@@ -151,4 +133,14 @@ class BacktrackClass:
         return False, state
 
     def run_backtrack(self, csp_instance: CSP) -> Tuple[bool, dict]:
-        return self._backtrack(csp_instance=csp_instance, state=dict())
+        """
+        Runs the backtrack and creates a human readable state to return.
+        """
+        found_solution, indexes_state = self._backtrack(
+            csp_instance=csp_instance, state=dict()
+        )
+        readable_state = dict()
+        for index in indexes_state:
+            readable_state[csp_instance.variables[index]] = indexes_state[index]
+
+        return found_solution, readable_state

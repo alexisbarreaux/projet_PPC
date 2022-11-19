@@ -20,17 +20,22 @@ class CSP:
         - domains are stored in a list, domains[i] being the domain of the variable C_i.
         - each constraint is a lambda function to evaluate the values of two variables and know wether they are
             valid or not. They are stored in a dict whose key is the tuple (index_variable_1, index_variable_2)
-            and whose value is the lambda function. We ensure we always have index_variable_1 < index_variable_2 for the
-            stored constraints.
+            and whose value is the lambda function. We ensure we always have both (index_variable_1, index_variable_2) and
+            (index_variable_2, index_variable_1) at once.
 
-    When building the CSP we also create a dict which maps variables (as strings) to their index in the list. This is used
+    When building the CSP we also create :
+        - variables_to_index_dict : a dict which maps variables (as strings) to their index in the list. This is used
     to provide easier functions where one would for instance build a constraint on "Apple" and "Pear" rather than 1 and 14.
+        - variable_is_constrained_by : a dict which stores for each variables what variables it is constrained by.
     """
 
-    variables_to_index_dict: dict
+    # Init/provided variables
     variables: Variables
     domains: Domains
     constraints: Constraints
+    # Built variables
+    variables_to_index_dict: dict
+    variable_is_constrained_by: dict = None
 
     # Building functions
     def __init__(
@@ -42,11 +47,44 @@ class CSP:
         self.variables = variables
         self.domains = domains
         self.constraints = constraints
+        # Self built variables
         self.variables_to_index_dict = {
             variables[index]: index for index in range(len(variables))
         }
+        self._update_constrained_information_with_constraints(constraints=constraints)
 
-    def build_tuples_from_constraint(
+    def _update_constrained_information_with_single_constraint(
+        self, index_variable_1: int, index_variable_2: int
+    ) -> None:
+        """
+        Update data to say that x is now constrained by y and y by x.
+        """
+        # Create the variable if it doesn't already exist
+        if self.variable_is_constrained_by is None:
+            self.variable_is_constrained_by = {
+                variable_index: set() for variable_index in range(len(self.variables))
+            }
+
+        self.variable_is_constrained_by[index_variable_1].add(index_variable_2)
+        self.variable_is_constrained_by[index_variable_2].add(index_variable_1)
+        return
+
+    def _update_constrained_information_with_constraints(
+        self, constraints: Constraints
+    ) -> None:
+        """
+        Update data to know who is constrained by whom.
+        """
+        for (
+            index_variable_1,
+            index_variable_2,
+        ) in constraints.keys():
+            self._update_constrained_information_with_single_constraint(
+                index_variable_1=index_variable_1,
+                index_variable_2=index_variable_2,
+            )
+
+    def _build_tuples_from_constraint(
         self, index_variable_1: int, index_variable_2: int, constraint: Constraint
     ) -> list[Tuple[VariableValue, VariableValue]]:
         return [
@@ -68,40 +106,22 @@ class CSP:
 
         str_representation += "\nConstraints:\n"
         for (i, j), constraint in self.constraints.items():
-            str_representation += f"{(self.variables[i], self.variables[j])}  {self.build_tuples_from_constraint(i, j, constraint)}.\n"
+            str_representation += f"{(self.variables[i], self.variables[j])}  {self._build_tuples_from_constraint(i, j, constraint)}.\n"
 
         return str_representation
 
-    def get_current_constraint_if_exists(
-        self, index_variable_1: int, index_variable_2: int
+    def _swap_constraint(
+        self,
+        constraint: Constraint,
     ) -> Constraint:
         """
-        Returns the current constraint if it exists, None otherwise.
+        We swap a constraint so that it takes the variables in the opposite order.
         """
-        return self.constraints.get((index_variable_1, index_variable_2), None)
+        return lambda i, j, value_var_i, value_var_j: constraint(
+            j, i, value_var_j, value_var_i
+        )
 
-    def swap_indices_if_needed(
-        self,
-        index_variable_1: int,
-        index_variable_2: int,
-        new_constraint: Constraint,
-    ) -> Tuple[int, int, Constraint]:
-        """
-        We want to have and keep index_variable_1 < index_variable_2. Swap them and rebuild the
-        constraint.
-        """
-        # If needed, swap
-        if index_variable_1 > index_variable_2:
-            swapped_constraint: Constraint = (
-                lambda i, j, value_var_i, value_var_j: new_constraint(
-                    j, i, value_var_j, value_var_i
-                )
-            )
-            return (index_variable_2, index_variable_1, swapped_constraint)
-        else:
-            return index_variable_1, index_variable_2, new_constraint
-
-    def combine_two_constraints(
+    def _combine_two_constraints(
         self, current_constraint: Constraint, new_constraint: Constraint
     ) -> Constraint:
         """
@@ -121,31 +141,42 @@ class CSP:
         Add a single constraint to the CSP. If no constraint exists on the variables, just put
         it in the dict. Else, intersect with current constraint.
         """
-        # Get the indices in the right order if not already the case
-        (
-            index_variable_1,
-            index_variable_2,
-            new_constraint,
-        ) = self.swap_indices_if_needed(
-            index_variable_1=index_variable_1,
-            index_variable_2=index_variable_2,
-            new_constraint=new_constraint,
+
+        # Store the fact that it possibly adds a constraint (in two orders) that weren't there before
+        self._update_constrained_information_with_single_constraint(
+            index_variable_1=index_variable_1, index_variable_2=index_variable_2
         )
-        # Get current constraint if it exists.
+
+        # Also get the swapped version of the constraint.
+        swapped_constraint = self._swap_constraint(
+            constraint=new_constraint,
+        )
+        # Get the current constraints if they exist.
         if (
-            current_constraint := self.get_current_constraint_if_exists(
-                index_variable_1=index_variable_1, index_variable_2=index_variable_2
+            current_constraint := self.constraints.get(
+                (index_variable_1, index_variable_2), None
             )
         ) is not None:
             # If the current one exists, make a logical "and" with the new one.
             self.constraints[
                 (index_variable_1, index_variable_2)
-            ] = self.combine_two_constraints(
+            ] = self._combine_two_constraints(
                 current_constraint=current_constraint, new_constraint=new_constraint
             )
+            # If this one exists then the second too, so update it too
+            current_constraint = self.constraints.get(
+                (index_variable_2, index_variable_1)
+            )
+            self.constraints[
+                (index_variable_2, index_variable_1)
+            ] = self._combine_two_constraints(
+                current_constraint=current_constraint, new_constraint=swapped_constraint
+            )
         else:
-            # If no current constraint exists, then just put the new constraint as is.
+            # If no current constraint exists, then just put the new constraint and her swapped
+            # version as is.
             self.constraints[(index_variable_1, index_variable_2)] = new_constraint
+            self.constraints[(index_variable_2, index_variable_1)] = swapped_constraint
 
         return
 
@@ -174,30 +205,3 @@ class CSP:
                 new_constraint=constraint,
             )
         return
-
-    # Backtrack functions
-    def get_linked_constraints(
-        self, variable_index: int
-    ) -> list[Tuple[(bool, int, Constraint)]]:
-        """
-        This function returns the constraints linked to a variable in a list of tuples, the first
-        element is a boolean saying wether the index given as an argument is the first of the key,
-        the second is the index of the linked variable and the last is the constraint itself.
-        So basically:
-            (is_variable_index_first, other_index, constraint)
-        """
-        linked_constraints = []
-        # Check variables Var_i with i smaller
-        for other_index in range(variable_index):
-            if (
-                constraint := self.constraints.get((other_index, variable_index), None)
-            ) is not None:
-                linked_constraints.append((False, other_index, constraint))
-        # And then check the bigger ones
-        for other_index in range(variable_index + 1, len(self.variables)):
-            if (
-                constraint := self.constraints.get((other_index, variable_index), None)
-            ) is not None:
-                linked_constraints.append((True, other_index, constraint))
-
-        return linked_constraints
