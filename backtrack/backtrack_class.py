@@ -25,15 +25,28 @@ class BacktrackClass:
 
     next_variable_choosing_method: Callable
     next_values_ordering_method: Callable
+    leaf_evaluation_method: Callable[[dict], bool]
 
     def __init__(
         self,
         next_variable_choosing_method: Callable = naive_variable_choosing,
         next_values_ordering_method: Callable = naive_values_ordering,
+        leaf_evaluation_method: Callable = None,
     ) -> None:
         self.next_variable_choosing_method = next_variable_choosing_method
         self.next_values_ordering_method = next_values_ordering_method
+        # By default always return True in a valid leaf
+        if leaf_evaluation_method is None:
+            self.leaf_evaluation_method = self.decision_leaf_evaluation
+        else:
+            self.leaf_evaluation_method = leaf_evaluation_method
         return
+
+    def decision_leaf_evaluation(self, leaf_state: dict) -> bool:
+        """
+        In a decision problem, being in a leaf is always enough.
+        """
+        return True
 
     def check_if_new_state_is_valid(
         self, csp_instance: CSP, state: dict, last_variable_index: int
@@ -101,9 +114,9 @@ class BacktrackClass:
             last_variable_index=last_variable_index,
         ):
             return False, state
-        # If the current state is complete (all variables have values), then return it
+        # If the current state is a leaf, evaluate it
         if len(state) == len(csp_instance.variables):
-            return True, state
+            return self.leaf_evaluation_method(state), state
 
         # Otherwise, choose a new variable to add to state
         last_variable_index = self.next_variable_choosing_method(
