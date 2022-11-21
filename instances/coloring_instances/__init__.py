@@ -14,4 +14,7 @@ COLORING_INSTANCES = [
     "myciel6.col.txt",
     "myciel7.col.txt",
     "queen13_13.col.txt",
+    "toy_chain.txt",
+    "toy_cycle.txt",
+    "toy_triangle.txt",
 ]
