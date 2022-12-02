@@ -20,7 +20,8 @@ def coloring_problem(graph_path: Path) -> CSP:
         number_of_nodes, number_of_edges = int(splitted_line[2]), int(splitted_line[3])
         # We could build smarter domains but won't
         variables = [str(i) for i in range(1, number_of_nodes + 1)]
-        domains = [list(range(1, number_of_nodes + 1)) for _ in range(len(variables))]
+        # Domains are left empty and will be computed in the optimization function
+        domains = []
 
         csp_coloring = CSP(variables=variables, domains=domains, constraints={})
 
@@ -69,10 +70,10 @@ def coloring_optimization(coloring_instance: CSP) -> Tuple[int, bool]:
         # Split the interval yet to be tested in two, this takes the lower integer part
         size_to_test = int((best_coloring_size + smallest_size_to_test) / 2)
 
-        # Create the associated leaf evaluation function for the backtrack tree
-        leaf_evaluation_method = lambda state: state_colors_count(state) <= size_to_test
-        # Run the backtrack
-        backtrack_object.leaf_evaluation_method = leaf_evaluation_method
+        # One car reduce the domains because of the size constraint.
+        for i in range(len(coloring_instance.domains)):
+            coloring_instance.domains[i] = [j for j in range(size_to_test)]
+
         result, state = backtrack_object.run_backtrack(csp_instance=coloring_instance)
 
         # If it didn't succeed, update smallest_size_to_test
