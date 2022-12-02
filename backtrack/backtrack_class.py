@@ -168,7 +168,7 @@ class BacktrackClass:
                 return True, child_state
             elif self.use_forward_checking:
                 # If the child was not satisfactory, revert what needs to be
-                csp_instance.domains_last_valid_index = current_valid_indices
+                csp_instance.domains_last_valid_index = current_valid_indices.copy()
 
         # If no sub nodes was true, return false
         return False, state

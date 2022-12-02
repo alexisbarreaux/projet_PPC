@@ -19,8 +19,8 @@ def forward_checking_current_state(
     ]:
         # If the linked variable is already instanciated, do nothing
         if state.get(linked_variable_index, None) is not None:
-
             continue
+
         else:
             # Get the associated constraint
             constraint: Constraint = csp_instance.constraints[
