@@ -1,0 +1,10 @@
+;instance;size;time;result
+0;queens;3;0.0;False
+1;queens;6;0.0;True
+2;queens;9;0.0009982585906982422;True
+3;queens;12;0.021010160446166992;True
+4;queens;15;0.12598752975463867;True
+5;queens;18;6.536052465438843;True
+6;queens;21;3.2259063720703125;True
+7;queens;24;106.85148859024048;True
+8;queens;27;129.23891615867615;True
