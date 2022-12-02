@@ -1,6 +1,4 @@
 # This file implements the AC3 algorithms for PPC
-from typing import Tuple
-
 from models import CSP
 from constants import Constraint
 
@@ -43,7 +41,7 @@ def restrict_domain_with_constraint(
     )
 
 
-def AC3_for_current_state(csp_instance: CSP) -> None:
+def AC3_current_state(csp_instance: CSP) -> None:
     """
     This function performs arc consistency by the AC3 algorithm in place
     """
@@ -52,12 +50,14 @@ def AC3_for_current_state(csp_instance: CSP) -> None:
     to_be_tested = set(csp_instance.constraints.keys())
 
     while len(to_be_tested) > 0:
+        print(to_be_tested)
         (index_variable_1, index_variable_2) = to_be_tested.pop()
         constraint: Constraint = csp_instance.constraints[
             (index_variable_1, index_variable_2)
         ]
         # We check both x through y and y through x at once.
         domain_was_restricted = restrict_domain_with_constraint(
+            csp_instance=csp_instance,
             index_variable_1=index_variable_1,
             index_variable_2=index_variable_2,
             constraint=constraint,
