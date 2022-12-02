@@ -14,12 +14,12 @@ def restrict_domain_with_constraint(
     It returns a boolean stating wether it managed to restrict the domains or not.
     """
     # We "de-pile/re-pile" as pop and append are in O(1) but removing isn't
-    updated_domain_1, updated_domain_2 = list(), list()
+    updated_domain_1 = list()
     domain_1, domain_2 = (
         csp_instance.domains[index_variable_1],
         csp_instance.domains[index_variable_2],
     )
-    base_domain_1_len, base_domain_2_len = len(domain_1), len(domain_2)
+    base_domain_1_len = len(domain_1)
 
     # First check the domain of the first variable
     for _ in range(base_domain_1_len):
@@ -33,12 +33,8 @@ def restrict_domain_with_constraint(
 
     # Finally update the CSP and return the booleans
     csp_instance.domains[index_variable_1] = updated_domain_1
-    csp_instance.domains[index_variable_2] = updated_domain_2
 
-    return (
-        len(updated_domain_1) != base_domain_1_len,
-        len(updated_domain_2) != base_domain_2_len,
-    )
+    return len(updated_domain_1) != base_domain_1_len
 
 
 def AC3_current_state(csp_instance: CSP) -> None:
@@ -50,7 +46,6 @@ def AC3_current_state(csp_instance: CSP) -> None:
     to_be_tested = set(csp_instance.constraints.keys())
 
     while len(to_be_tested) > 0:
-        print(to_be_tested)
         (index_variable_1, index_variable_2) = to_be_tested.pop()
         constraint: Constraint = csp_instance.constraints[
             (index_variable_1, index_variable_2)
