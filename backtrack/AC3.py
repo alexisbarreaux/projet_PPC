@@ -3,6 +3,7 @@ from models import CSP
 from constants import Constraint
 
 
+# TODO update AC3 to make it forward-checking-compatible
 def restrict_domain_with_constraint(
     csp_instance: CSP,
     index_variable_1: int,

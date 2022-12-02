@@ -15,3 +15,5 @@ as a function.
 For the optimization problem, we stay in decision but do a dichotomy on the values.
 
 Switching Domains to a list of domain and constraint to a dict with keys on indices.
+
+Mixing AC3 and forward will not be trivial implementation-wise.

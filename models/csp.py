@@ -25,8 +25,11 @@ class CSP:
 
     When building the CSP we also create :
         - variables_to_index_dict : a dict which maps variables (as strings) to their index in the list. This is used
-    to provide easier functions where one would for instance build a constraint on "Apple" and "Pear" rather than 1 and 14.
+            to provide easier functions where one would for instance build a constraint on "Apple" and "Pear" rather than 1
+            and 14.
         - variable_is_constrained_by : a dict which stores for each variables what variables it is constrained by.
+        - domains_last_valid_index : this states for i in range the number of variables, which subpart of the domain of
+            the variable is currently valid, inspired by the slides of the third lesson on memory management.
     """
 
     # Init/provided variables
@@ -36,6 +39,7 @@ class CSP:
     # Built variables
     variables_to_index_dict: dict
     variable_is_constrained_by: dict = None
+    domains_last_valid_index: list[int]
 
     # Building functions
     def __init__(
@@ -52,6 +56,9 @@ class CSP:
             variables[index]: index for index in range(len(variables))
         }
         self._update_constrained_information_with_constraints(constraints=constraints)
+        self.domains_last_valid_index = [
+            len(domains[i]) - 1 for i in range(len(domains))
+        ]
 
     def _update_constrained_information_with_single_constraint(
         self, index_variable_1: int, index_variable_2: int
