@@ -18,3 +18,5 @@ Switching Domains to a list of domain and constraint to a dict with keys on indi
 
 Mixing AC3 and forward will not be trivial implementation-wise.
 Managed a factor 2 gain
+
+AC3 helps reducing the number of nodes, but it takes a lot of time right now

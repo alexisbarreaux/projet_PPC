@@ -1,21 +1,19 @@
 # This file implements forward checking algorithm for PPC
-from typing import Tuple
-
 from models import CSP
 from constants import Constraint, VariableValue, Domain
 
 
 def forward_checking_current_state(
-    csp_instance: CSP, state: dict, last_variable_index: int
-) -> Tuple[bool, list]:
+    csp_instance: CSP, state: dict, last_variable_index: int, shrinking_operations: dict
+) -> bool:
     """
     This function performs a forward checking on the current state of the csp instance,
-    meaning it attempts to cut the domains of the constraints linked to the last variable
+    meaning it attempts to cut the domains of the variables linked to the last variable
     added to the state.
-    It returns a boolean stating wether a domain became empty or not and a list of tuples of size 2. Each
-    tuple (i_ value_i) states of how much the i-th domain has been shrunk, if it has been.
+    It returns a boolean stating wether a domain became empty or not.
     """
-    shrinking_operations: list = list()
+    if last_variable_index is None:
+        return False
     last_variable_value: VariableValue = state[last_variable_index]
 
     for linked_variable_index in csp_instance.variable_is_constrained_by[
@@ -62,7 +60,7 @@ def forward_checking_current_state(
                         linked_domain_last_index -= 1
                     # Otherwise we know that we have an empty domain, just stop there
                     else:
-                        return True, shrinking_operations
+                        return True
 
                 # Otherwise just go check next possible value
                 else:
@@ -71,7 +69,12 @@ def forward_checking_current_state(
             csp_instance.domains_last_valid_index[
                 linked_variable_index
             ] = linked_domain_last_index
-            if shrunk_domain_of > 0:
-                shrinking_operations.append((linked_variable_index, shrunk_domain_of))
 
-    return False, shrinking_operations
+            if shrunk_domain_of > 0:
+                shrinking_operations[
+                    linked_variable_index
+                ] = shrunk_domain_of + shrinking_operations.get(
+                    linked_variable_index, 0
+                )
+
+    return False

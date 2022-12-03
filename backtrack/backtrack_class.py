@@ -66,13 +66,16 @@ class BacktrackClass:
         """
         return True
 
-    def check_if_new_state_is_valid(
+    def _check_if_new_state_is_valid(
         self, csp_instance: CSP, state: dict, last_variable_index: int
     ) -> bool:
         """
         If the previous state was valid, only constraints between the variable which now has a value
         and the previous ones can be violated.
         """
+        if last_variable_index is None:
+            return True
+
         last_variable_value = state[last_variable_index]
         for other_variable_index in state:
             other_variable_value = state[other_variable_index]
@@ -94,16 +97,15 @@ class BacktrackClass:
         return True
 
     def _revert_shrinking_operations(
-        self, csp_instance: CSP, shrinking_operations: list
+        self, csp_instance: CSP, shrinking_operations: dict
     ) -> None:
         """
         Reset the domain index when backtracking.
         """
-        if shrinking_operations is None:
-            return
-
-        for variable_index, shrunk_of in shrinking_operations:
-            csp_instance.domains_last_valid_index[variable_index] += shrunk_of
+        for variable_index in shrinking_operations:
+            csp_instance.domains_last_valid_index[
+                variable_index
+            ] += shrinking_operations[variable_index]
         return
 
     def _backtrack(
@@ -123,39 +125,46 @@ class BacktrackClass:
         It returns a boolean and the current state.
         """
         self.nodes += 1
-        shrinking_operations = None
+        shrinking_operations: dict = dict()
 
-        # If not in the root node
-        if not last_variable_index is None:
-            # Check if a constraint is invalidated by the new state
-            # TODO might not be needed when we use forward checking
-            if not self.check_if_new_state_is_valid(
+        # Check if a constraint is invalidated by the new state
+        if not self._check_if_new_state_is_valid(
+            csp_instance=csp_instance,
+            state=state,
+            last_variable_index=last_variable_index,
+        ):
+            return False, state
+
+        # If the current state is a leaf, evaluate it
+        if len(state) == len(csp_instance.variables):
+            return self.leaf_evaluation_method(state), state
+
+        # Use arc consistency if asked
+        if self.use_arc_consistency:
+            emptied_a_domain, shrinking_operations = AC3_current_state(
+                csp_instance=csp_instance
+            )
+            if emptied_a_domain:
+                self._revert_shrinking_operations(
+                    csp_instance=csp_instance,
+                    shrinking_operations=shrinking_operations,
+                )
+                return False, state
+
+        # Use forward checking if asked
+        if self.use_forward_checking:
+            emptied_a_domain = forward_checking_current_state(
                 csp_instance=csp_instance,
                 state=state,
                 last_variable_index=last_variable_index,
-            ):
-                return False, state
-
-            # If the current state is a leaf, evaluate it
-            if len(state) == len(csp_instance.variables):
-                return self.leaf_evaluation_method(state), state
-            # Otherwise use forward checking if asked
-            elif self.use_forward_checking:
-                (
-                    checking_emptied_domain,
-                    shrinking_operations,
-                ) = forward_checking_current_state(
+                shrinking_operations=shrinking_operations,
+            )
+            if emptied_a_domain:
+                self._revert_shrinking_operations(
                     csp_instance=csp_instance,
-                    state=state,
-                    last_variable_index=last_variable_index,
+                    shrinking_operations=shrinking_operations,
                 )
-                # If forward checking empties a domain, return
-                if checking_emptied_domain:
-                    self._revert_shrinking_operations(
-                        csp_instance=csp_instance,
-                        shrinking_operations=shrinking_operations,
-                    )
-                    return False, state
+                return False, state
 
         # Otherwise, choose a new variable to add to state
         last_variable_index = self.next_variable_choosing_method(
@@ -184,7 +193,7 @@ class BacktrackClass:
                 return True, child_state
 
         # If no sub nodes was true, undo domains modifications
-        if self.use_forward_checking:
+        if self.use_forward_checking or self.use_arc_consistency:
             self._revert_shrinking_operations(
                 csp_instance=csp_instance, shrinking_operations=shrinking_operations
             )
