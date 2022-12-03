@@ -1,0 +1,11 @@
+;instance;nodes;time;result
+0;3 queens;6;0.0;False
+1;6 queens;42;0.0011;True
+2;9 queens;100;0.0062;True
+3;12 queens;409;0.0303;True
+4;15 queens;184;0.0164;True
+5;18 queens;589;0.0618;True
+6;21 queens;1875;0.2705;True
+7;24 queens;24332;5.1843;True
+8;27 queens;130891;8.5127;True
+9;30 queens;155465;8.7612;True
