@@ -205,6 +205,7 @@ class BacktrackClass:
         Runs the backtrack and creates a human readable state to return.
         """
         self.reset_statistics_variables()
+        csp_instance.reset_needed_variables()
 
         found_solution, indexes_state = self._backtrack(
             csp_instance=csp_instance, state=dict()

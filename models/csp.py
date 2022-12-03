@@ -39,6 +39,7 @@ class CSP:
     # Built variables
     variables_to_index_dict: dict
     variable_is_constrained_by: dict = None
+    # Variables that need to be reset
     domains_last_valid_index: list[int]
 
     # Building functions
@@ -56,9 +57,16 @@ class CSP:
             variables[index]: index for index in range(len(variables))
         }
         self._update_constrained_information_with_constraints(constraints=constraints)
+        self.reset_needed_variables()
+
+    def reset_needed_variables(self):
+        """
+        Used to reset the variables used by the backtrack
+        """
         self.domains_last_valid_index = [
-            len(domains[i]) - 1 for i in range(len(domains))
+            len(self.domains[i]) - 1 for i in range(len(self.domains))
         ]
+        return
 
     def _update_constrained_information_with_single_constraint(
         self, index_variable_1: int, index_variable_2: int
