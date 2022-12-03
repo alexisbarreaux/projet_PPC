@@ -93,6 +93,19 @@ class BacktrackClass:
 
         return True
 
+    def _revert_shrinking_operations(
+        self, csp_instance: CSP, shrinking_operations: list
+    ) -> None:
+        """
+        Reset the domain index when backtracking.
+        """
+        if shrinking_operations is None:
+            return
+
+        for variable_index, shrunk_of in shrinking_operations:
+            csp_instance.domains_last_valid_index[variable_index] += shrunk_of
+        return
+
     def _backtrack(
         self, csp_instance: CSP, state: dict, last_variable_index: int = None
     ) -> Tuple[bool, dict]:
@@ -110,6 +123,7 @@ class BacktrackClass:
         It returns a boolean and the current state.
         """
         self.nodes += 1
+        shrinking_operations = None
 
         # If not in the root node
         if not last_variable_index is None:
@@ -127,13 +141,20 @@ class BacktrackClass:
                 return self.leaf_evaluation_method(state), state
             # Otherwise use forward checking if asked
             elif self.use_forward_checking:
-                checking_emptied_domain = forward_checking_current_state(
+                (
+                    checking_emptied_domain,
+                    shrinking_operations,
+                ) = forward_checking_current_state(
                     csp_instance=csp_instance,
                     state=state,
                     last_variable_index=last_variable_index,
                 )
                 # If forward checking empties a domain, return
                 if checking_emptied_domain:
+                    self._revert_shrinking_operations(
+                        csp_instance=csp_instance,
+                        shrinking_operations=shrinking_operations,
+                    )
                     return False, state
 
         # Otherwise, choose a new variable to add to state
@@ -145,11 +166,6 @@ class BacktrackClass:
         new_variable_values_order = self.next_values_ordering_method(
             csp_instance=csp_instance, last_variable_index=last_variable_index
         )
-
-        if self.use_forward_checking:
-            # Store current valid indices for the domains to revert it later when backtracking
-            # TODO sub optimal, we now that we will at most modify only the indices of the ones not yet in state.
-            current_valid_indices = csp_instance.domains_last_valid_index.copy()
 
         for new_variable_possible_value in new_variable_values_order:
             # Copy the state dict to be able to call recurisvely without issue
@@ -166,11 +182,13 @@ class BacktrackClass:
             if child_result:
                 # If a sub node has a solution, go back up and return true
                 return True, child_state
-            elif self.use_forward_checking:
-                # If the child was not satisfactory, revert what needs to be
-                csp_instance.domains_last_valid_index = current_valid_indices.copy()
 
-        # If no sub nodes was true, return false
+        # If no sub nodes was true, undo domains modifications
+        if self.use_forward_checking:
+            self._revert_shrinking_operations(
+                csp_instance=csp_instance, shrinking_operations=shrinking_operations
+            )
+        # Then return false
         return False, state
 
     def run_backtrack(self, csp_instance: CSP) -> Tuple[bool, dict]:
