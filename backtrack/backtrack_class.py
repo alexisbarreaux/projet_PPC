@@ -22,6 +22,8 @@ class BacktrackClass:
             naive order where we just take the next varaible's domain.
         - optimization_state_evaluation (Callable): a function to choose between two states when working on an optimization
             (and not decision) problem.
+        - domains_last_valid_index : this states for i in range the number of variables, which subpart of the domain of
+            the variable is currently valid, inspired by the slides of the third lesson on memory management.
 
     """
 
@@ -33,6 +35,8 @@ class BacktrackClass:
     use_forward_checking: bool
     # Statistics attributes
     nodes: int = 0
+    # Variables that need to be reset
+    domains_last_valid_index: list[int]
 
     def __init__(
         self,
@@ -103,9 +107,9 @@ class BacktrackClass:
         Reset the domain index when backtracking.
         """
         for variable_index in shrinking_operations:
-            csp_instance.domains_last_valid_index[
+            self.domains_last_valid_index[variable_index] += shrinking_operations[
                 variable_index
-            ] += shrinking_operations[variable_index]
+            ]
         return
 
     def _backtrack(
@@ -142,7 +146,9 @@ class BacktrackClass:
         # Use arc consistency if asked
         if self.use_arc_consistency:
             emptied_a_domain = AC3_current_state(
-                csp_instance=csp_instance, shrinking_operations=shrinking_operations
+                csp_instance=csp_instance,
+                shrinking_operations=shrinking_operations,
+                domains_last_valid_index=self.domains_last_valid_index,
             )
             if emptied_a_domain:
                 self._revert_shrinking_operations(
@@ -158,6 +164,7 @@ class BacktrackClass:
                 state=state,
                 last_variable_index=last_variable_index,
                 shrinking_operations=shrinking_operations,
+                domains_last_valid_index=self.domains_last_valid_index,
             )
             if emptied_a_domain:
                 self._revert_shrinking_operations(
@@ -205,7 +212,10 @@ class BacktrackClass:
         Runs the backtrack and creates a human readable state to return.
         """
         self.reset_statistics_variables()
-        csp_instance.reset_needed_variables()
+
+        self.domains_last_valid_index = [
+            len(csp_instance.domains[i]) - 1 for i in range(len(csp_instance.domains))
+        ]
 
         found_solution, indexes_state = self._backtrack(
             csp_instance=csp_instance, state=dict()

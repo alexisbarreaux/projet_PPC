@@ -11,6 +11,7 @@ def restrict_domain_with_constraint(
     index_variable_2: int,
     constraint: Constraint,
     shrinking_operations: dict,
+    domains_last_valid_index: list,
 ) -> Tuple[bool, bool]:
     """
     This function attempts to restrict the domain of the first variable.
@@ -18,8 +19,8 @@ def restrict_domain_with_constraint(
     - the first stating wether it emptied the domain
     - the second stating if it restricted the domain
     """
-    domain_1_last_valid = csp_instance.domains_last_valid_index[index_variable_1]
-    domain_2_last_valid = csp_instance.domains_last_valid_index[index_variable_2]
+    domain_1_last_valid = domains_last_valid_index[index_variable_1]
+    domain_2_last_valid = domains_last_valid_index[index_variable_2]
     domain_1: Domain = csp_instance.domains[index_variable_1]
     domain_2: Domain = csp_instance.domains[index_variable_2]
     shrunk_domain_of = 0
@@ -52,7 +53,7 @@ def restrict_domain_with_constraint(
                 return True, True
 
     # At the end update the csp and store the shrunking opération if it exists.
-    csp_instance.domains_last_valid_index[index_variable_1] = domain_1_last_valid
+    domains_last_valid_index[index_variable_1] = domain_1_last_valid
     if shrunk_domain_of > 0:
         shrinking_operations[
             index_variable_1
@@ -62,7 +63,9 @@ def restrict_domain_with_constraint(
         return False, False
 
 
-def AC3_current_state(csp_instance: CSP, shrinking_operations: dict) -> bool:
+def AC3_current_state(
+    csp_instance: CSP, shrinking_operations: dict, domains_last_valid_index: list
+) -> bool:
     """
     This function performs arc consistency by the AC3 algorithm in place and returns a
     boolean stating wether it emptied a domain.
@@ -83,6 +86,7 @@ def AC3_current_state(csp_instance: CSP, shrinking_operations: dict) -> bool:
             index_variable_2=index_variable_2,
             constraint=constraint,
             shrinking_operations=shrinking_operations,
+            domains_last_valid_index=domains_last_valid_index,
         )
         if domain_was_emptied:
             return True

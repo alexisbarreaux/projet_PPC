@@ -4,7 +4,7 @@ from constants import Constraint, VariableValue, Domain
 
 
 def forward_checking_current_state(
-    csp_instance: CSP, state: dict, last_variable_index: int, shrinking_operations: dict
+    csp_instance: CSP, state: dict, last_variable_index: int, shrinking_operations: dict, domains_last_valid_index: list
 ) -> bool:
     """
     This function performs a forward checking on the current state of the csp instance,
@@ -31,7 +31,7 @@ def forward_checking_current_state(
             ]
             # Get the current domain of the linked variable
             linked_variable_domain: Domain = csp_instance.domains[linked_variable_index]
-            linked_domain_last_index = csp_instance.domains_last_valid_index[
+            linked_domain_last_index = domains_last_valid_index[
                 linked_variable_index
             ]
 
@@ -66,7 +66,7 @@ def forward_checking_current_state(
                 else:
                     index += 1
             # At the end update the csp and store the shrunking opération if it exists.
-            csp_instance.domains_last_valid_index[
+            domains_last_valid_index[
                 linked_variable_index
             ] = linked_domain_last_index
 
