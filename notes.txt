@@ -20,3 +20,4 @@ Mixing AC3 and forward will not be trivial implementation-wise.
 Managed a factor 2 gain
 
 AC3 helps reducing the number of nodes, but it takes a lot of time right now
+AC3 takes up 95%+ of the time of our run

@@ -62,17 +62,14 @@ def restrict_domain_with_constraint(
         return False, False
 
 
-def AC3_current_state(csp_instance: CSP) -> Tuple[bool, dict]:
+def AC3_current_state(csp_instance: CSP, shrinking_operations: dict) -> bool:
     """
     This function performs arc consistency by the AC3 algorithm in place and returns a
-    tuple made of:
-        - a boolean stating wether it emptied a domain
-        - a dict to tell which domain it shrunk and of how much.
+    boolean stating wether it emptied a domain.
     """
     # Store the variables couples to be tested, at first these are all the ones for which
     # a constraint exists. We use a set to avoid duplicates
     to_be_tested = set(csp_instance.constraints.keys())
-    shrinking_operations = dict()
 
     while len(to_be_tested) > 0:
         (index_variable_1, index_variable_2) = to_be_tested.pop()
@@ -88,7 +85,7 @@ def AC3_current_state(csp_instance: CSP) -> Tuple[bool, dict]:
             shrinking_operations=shrinking_operations,
         )
         if domain_was_emptied:
-            return True, shrinking_operations
+            return True
         elif domain_was_restricted:
             for linked_variable_index in csp_instance.variable_is_constrained_by[
                 index_variable_1
@@ -98,4 +95,4 @@ def AC3_current_state(csp_instance: CSP) -> Tuple[bool, dict]:
         else:
             continue
 
-    return False, shrinking_operations
+    return False

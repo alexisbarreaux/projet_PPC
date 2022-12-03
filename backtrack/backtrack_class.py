@@ -141,8 +141,8 @@ class BacktrackClass:
 
         # Use arc consistency if asked
         if self.use_arc_consistency:
-            emptied_a_domain, shrinking_operations = AC3_current_state(
-                csp_instance=csp_instance
+            emptied_a_domain = AC3_current_state(
+                csp_instance=csp_instance, shrinking_operations=shrinking_operations
             )
             if emptied_a_domain:
                 self._revert_shrinking_operations(
