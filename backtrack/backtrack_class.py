@@ -180,7 +180,9 @@ class BacktrackClass:
         # Compute the order in which to test the possible values
         # TODO handle the last variable index here better
         new_variable_values_order = self.next_values_ordering_method(
-            csp_instance=csp_instance, last_variable_index=last_variable_index
+            csp_instance=csp_instance,
+            last_variable_index=last_variable_index,
+            domain_last_valid_index=self.domains_last_valid_index[last_variable_index],
         )
 
         for new_variable_possible_value in new_variable_values_order:

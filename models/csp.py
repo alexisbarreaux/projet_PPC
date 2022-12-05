@@ -53,7 +53,6 @@ class CSP:
             variables[index]: index for index in range(len(variables))
         }
         self._update_constrained_information_with_constraints(constraints=constraints)
-        self.reset_needed_variables()
 
     def _update_constrained_information_with_single_constraint(
         self, index_variable_1: int, index_variable_2: int
