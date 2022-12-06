@@ -5,7 +5,9 @@ from models import CSP
 
 from .AC3 import AC3_current_state
 from .forward_checking import forward_checking_current_state
-from .variables_choosing_algorithms import naive_variable_choosing
+from .variables_choosing_algorithms import (
+    naive_variable_choosing,
+)
 from .values_ordering_algorithms import naive_values_ordering
 
 
@@ -16,7 +18,8 @@ class BacktrackClass:
     It has the following properties:
         - next_variable_choosing_method (Callable): the function used to select the next variable
             we want to put in the state. It takes the CSP and current state as input. It defaults to the
-            naive choice where we just take the next variable in the CSP's order.
+            naive choice where we just take the next variable in the CSP's order. It also take the current
+            domains_last_valid_index.
         - next_values_ordering_method (Callable): the function used to order the values and know in
             which order to test them.. It takes the CSP and new variable as input. It defaults to the
             naive order where we just take the next varaible's domain.
@@ -175,7 +178,9 @@ class BacktrackClass:
 
         # Otherwise, choose a new variable to add to state
         last_variable_index = self.next_variable_choosing_method(
-            csp_instance=csp_instance, state=state
+            csp_instance=csp_instance,
+            state=state,
+            domains_last_valid_index=self.domains_last_valid_index,
         )
         # Compute the order in which to test the possible values
         # TODO handle the last variable index here better
