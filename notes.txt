@@ -23,3 +23,5 @@ AC3 helps reducing the number of nodes, but it takes a lot of time right now
 AC3 takes up 95%+ of the time of our run
 
 Smallest domain first has monstruous results on n queens
+
+Helped reduce the length of coloring by using max degree + 1 as upper bound of the coloring rather than n

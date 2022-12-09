@@ -1,16 +1,19 @@
 from typing import Tuple
+from time import time
 
 from pathlib import Path
 
 from models import CSP
 from backtrack import BacktrackClass
+from wrappers import alldiff
 
 lambda_wrapper_for_a_couple_of_variables = None
 
 
-def coloring_problem(graph_path: Path) -> CSP:
+def coloring_problem(graph_path: Path) -> Tuple[CSP, int]:
     """
     Used to build a CSP to be resolved as an optimization problem to color a graph.
+    It also returns the max degree of the graph.
     """
     with open(graph_path, "r") as instance_file:
         while (line := instance_file.readline()).startswith("c"):
@@ -18,6 +21,7 @@ def coloring_problem(graph_path: Path) -> CSP:
 
         splitted_line = line.split(" ")
         number_of_nodes, number_of_edges = int(splitted_line[2]), int(splitted_line[3])
+        degrees = [0 for _ in range(number_of_nodes)]
         # We could build smarter domains but won't
         variables = [str(i) for i in range(1, number_of_nodes + 1)]
         # Domains are left empty and will be computed in the optimization function
@@ -31,14 +35,15 @@ def coloring_problem(graph_path: Path) -> CSP:
             _, first_node, second_node = instance_file.readline().split(" ")
             first_node_index = int(first_node) - 1
             second_node_index = int(second_node) - 1
+            degrees[first_node_index] += 1
+            degrees[second_node_index] += 1
             csp_coloring.add_constraint(
                 index_variable_1=first_node_index,
                 index_variable_2=second_node_index,
-                new_constraint=lambda i, j, value_var_i, value_var_j: value_var_i
-                != value_var_j,
+                new_constraint=alldiff,
             )
 
-        return csp_coloring
+        return csp_coloring, max(degrees)
 
 
 def state_colors_count(state: dict) -> int:
@@ -53,29 +58,34 @@ def state_colors_count(state: dict) -> int:
 
 def coloring_optimization(
     coloring_instance: CSP,
-    use_arc_consistency: bool = False,
-    use_forward_checking: bool = False,
-) -> Tuple[int, bool, int]:
+    max_degree: int,
+    backtrack_object: BacktrackClass,
+    time_limit: int = -1,
+) -> Tuple[int, bool, int, bool]:
     """
     This function takes a coloring problem instance and returns an upper bound
     (if not the minimum) number of colors needed to color this graph, the best state and
-    the number of nodes in the best state.
+    the number of nodes in the best state. The best colors found might be just a bound if we put
+    a max execution time. Thus a boolean helps to know wether it is a bound or not.
     """
-    # For now it is very naive, we test the colorings between 2 colors and n colors
+    # For now it is very naive, we test the colorings between 2 colors and max_degree + 1 colors
     # by dichotomy to know the optimal value.
-    n = len(coloring_instance.variables)
     # Result variables
-    best_coloring_size = n
+    best_coloring_size = (
+        max_degree + 1
+    )  # For complete graph otherwise <= max_degree cf Brooks theorem, but the bound is valid
     best_state = None
     best_nodes = None
     # Process variables
     smallest_size_to_test = 1
-    backtrack_object = BacktrackClass(
-        use_arc_consistency=use_arc_consistency,
-        use_forward_checking=use_forward_checking,
-    )
 
-    while smallest_size_to_test <= best_coloring_size - 1:
+    # Time variables
+    run_time = 0
+    start_time = time()
+
+    while smallest_size_to_test <= best_coloring_size - 1 and (
+        time_limit < 0 or run_time < time_limit
+    ):
         # Split the interval yet to be tested in two, this takes the lower integer part
         size_to_test = int((best_coloring_size + smallest_size_to_test) / 2)
 
@@ -98,4 +108,9 @@ def coloring_optimization(
             best_state = state
             best_nodes = backtrack_object.nodes
 
-    return best_coloring_size, best_state, best_nodes
+        # Update run time
+        run_time = time() - start_time
+
+    is_exact = time_limit < 0 or run_time < time_limit
+
+    return best_coloring_size, best_state, best_nodes, is_exact

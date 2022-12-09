@@ -1,0 +1,6 @@
+;instance;time;nodes;colors bound;time_limit;is_exact
+0;toy_chain;0.001001119613647461;6;2;30;True
+1;toy_cycle;0.0;6;2;30;True
+2;toy_triangle;0.0;;3;30;True
+3;myciel3;0.0029985904693603516;12;4;30;True
+4;myciel4;1.3720014095306396;24;5;30;True
