@@ -16,6 +16,7 @@ COLORING_INSTANCES = {
     "myciel7.col.txt": 8,
     "queen13_13.col.txt": 13,
     "toy_chain.txt": 2,
-    "toy_cycle.txt": 2,
+    "toy_odd_cycle.txt": 3,
+    "toy_even_cycle.txt": 2,
     "toy_triangle.txt": 3,
 }
