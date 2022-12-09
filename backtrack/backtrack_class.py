@@ -127,7 +127,11 @@ class BacktrackClass:
         return
 
     def _backtrack(
-        self, csp_instance: CSP, state: dict, last_variable_index: int = None
+        self,
+        csp_instance: CSP,
+        state: dict,
+        last_variable_index: int = None,
+        last_value_index: int = None,
     ) -> Tuple[bool, dict]:
         """
         This backtrack will return back the first possible solution.
@@ -148,7 +152,18 @@ class BacktrackClass:
         if self.time_limit > 0 and self.run_time >= self.time_limit:
             return False, state
 
-        shrinking_operations: dict = dict()
+        # We can close the domain of the last added variable
+        last_variable_value = state[last_variable_index]
+        # Swap first valid and current
+        current_first_valid = csp_instance.domains[last_variable_index][0]
+        csp_instance.domains[last_variable_index][
+            last_value_index
+        ] = current_first_valid
+        csp_instance.domains[last_variable_index][0] = last_variable_value
+        shrinking_operations: dict = {
+            last_variable_index: self.domains_last_valid_index[last_variable_index] - 1
+        }
+        self.domains_last_valid_index[last_variable_index] = 0
 
         # Check if a constraint is invalidated by the new state
         if not self._check_if_new_state_is_valid(
@@ -193,40 +208,40 @@ class BacktrackClass:
                 return False, state
 
         # Otherwise, choose a new variable to add to state
-        last_variable_index = self.next_variable_choosing_method(
+        new_variable_index = self.next_variable_choosing_method(
             csp_instance=csp_instance,
             state=state,
             domains_last_valid_index=self.domains_last_valid_index,
         )
         # Compute the order in which to test the possible values
-        # TODO handle the last variable index here better
-        new_variable_values_order = self.next_values_ordering_method(
+        new_values_indices = self.next_values_ordering_method(
             csp_instance=csp_instance,
-            last_variable_index=last_variable_index,
-            domain_last_valid_index=self.domains_last_valid_index[last_variable_index],
+            last_variable_index=new_variable_index,
+            domain_last_valid_index=self.domains_last_valid_index[new_variable_index],
         )
 
-        for new_variable_possible_value in new_variable_values_order:
+        for new_value_index in new_values_indices:
             # Copy the state dict to be able to call recurisvely without issue
             # TODO this copy could probably be removed by removing last added value in the dict
             # when finding an invalid state.
+            new_value = csp_instance.domains[new_variable_index][new_value_index]
             new_state = state.copy()
-            new_state.update({last_variable_index: new_variable_possible_value})
+            new_state.update({new_variable_index: new_value})
 
             child_result, child_state = self._backtrack(
                 csp_instance=csp_instance,
                 state=new_state,
-                last_variable_index=last_variable_index,
+                last_variable_index=new_variable_index,
+                last_value_index=new_value_index,
             )
             if child_result:
                 # If a sub node has a solution, go back up and return true
                 return True, child_state
 
         # If no sub nodes was true, undo domains modifications
-        if self.use_forward_checking or self.use_arc_consistency:
-            self._revert_shrinking_operations(
-                csp_instance=csp_instance, shrinking_operations=shrinking_operations
-            )
+        self._revert_shrinking_operations(
+            csp_instance=csp_instance, shrinking_operations=shrinking_operations
+        )
         # Then return false
         return False, state
 
