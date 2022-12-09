@@ -66,7 +66,7 @@ def coloring_optimization(
     This function takes a coloring problem instance and returns an upper bound
     (if not the minimum) number of colors needed to color this graph, the best state and
     the number of nodes in the best state. The best colors found might be just a bound if we put
-    a max execution time. Thus a boolean helps to know wether it is a bound or not.
+    a max execution time. Thus a boolean helps to know wether we ran out of time or not.
     """
     # For now it is very naive, we test the colorings between 2 colors and max_degree + 1 colors
     # by dichotomy to know the optimal value.
@@ -83,9 +83,16 @@ def coloring_optimization(
     run_time = 0
     start_time = time()
 
-    while smallest_size_to_test <= best_coloring_size - 1 and (
-        time_limit < 0 or run_time < time_limit
-    ):
+    while smallest_size_to_test <= best_coloring_size - 1:
+        # Set current time limit for backtrack
+        run_time = time() - start_time
+        # If runtime is exceeded, get out
+        if time_limit > 0 and run_time > time_limit:
+            break
+        else:
+            # Otherwise update time limt for the backtrack
+            backtrack_object.time_limit = time_limit - run_time
+
         # Split the interval yet to be tested in two, this takes the lower integer part
         size_to_test = int((best_coloring_size + smallest_size_to_test) / 2)
 
@@ -111,6 +118,6 @@ def coloring_optimization(
         # Update run time
         run_time = time() - start_time
 
-    is_exact = time_limit < 0 or run_time < time_limit
+    finished = time_limit < 0 or run_time < time_limit
 
-    return best_coloring_size, best_state, best_nodes, is_exact
+    return best_coloring_size, best_state, best_nodes, finished

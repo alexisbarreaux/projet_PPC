@@ -1,5 +1,6 @@
 # Main file for the backtrack algorithm.
 from typing import Callable, Tuple
+from time import time
 
 from models import CSP
 
@@ -40,6 +41,10 @@ class BacktrackClass:
     nodes: int = 0
     # Variables that need to be reset
     domains_last_valid_index: list[int]
+    # Time variables
+    time_limit: int
+    start_time: float
+    run_time: float
 
     def __init__(
         self,
@@ -48,11 +53,13 @@ class BacktrackClass:
         leaf_evaluation_method: Callable = None,
         use_arc_consistency: bool = False,
         use_forward_checking: bool = False,
+        time_limit: int = -1,
     ) -> None:
         self.next_variable_choosing_method = next_variable_choosing_method
         self.next_values_ordering_method = next_values_ordering_method
         self.use_arc_consistency = use_arc_consistency
         self.use_forward_checking = use_forward_checking
+        self.time_limit = time_limit
         # By default always return True in a valid leaf
         if leaf_evaluation_method is None:
             self.leaf_evaluation_method = self.decision_leaf_evaluation
@@ -60,12 +67,16 @@ class BacktrackClass:
             self.leaf_evaluation_method = leaf_evaluation_method
         return
 
-    def reset_statistics_variables(self) -> None:
+    def _reset_statistics_variables(self) -> None:
         """
         Used before each backtrack
         """
         self.nodes = 0
+        self.start_time = time()
         return
+
+    def _update_runtime(self) -> None:
+        self.run_time = time() - self.start_time
 
     def decision_leaf_evaluation(self, leaf_state: dict) -> bool:
         """
@@ -132,6 +143,11 @@ class BacktrackClass:
         It returns a boolean and the current state.
         """
         self.nodes += 1
+        # If runtime is exceeded, return with False as we don't know if the node is valid or not.
+        self._update_runtime()
+        if self.time_limit > 0 and self.run_time >= self.time_limit:
+            return False, state
+
         shrinking_operations: dict = dict()
 
         # Check if a constraint is invalidated by the new state
@@ -218,7 +234,7 @@ class BacktrackClass:
         """
         Runs the backtrack and creates a human readable state to return.
         """
-        self.reset_statistics_variables()
+        self._reset_statistics_variables()
 
         self.domains_last_valid_index = [
             len(csp_instance.domains[i]) - 1 for i in range(len(csp_instance.domains))

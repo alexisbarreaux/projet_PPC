@@ -1,6 +1,13 @@
-;instance;time;nodes;colors bound;time_limit;is_exact
-0;toy_chain;0.001001119613647461;6;2;30;True
-1;toy_cycle;0.0;6;2;30;True
-2;toy_triangle;0.0;;3;30;True
-3;myciel3;0.0029985904693603516;12;4;30;True
-4;myciel4;1.3720014095306396;24;5;30;True
+;instance;time;graph nodes/edges;backtrack nodes;colors bound;time_limit;is_exact
+0;anna;20.002585887908936;138 / 493;139;18;20;False
+1;jean;20.00033950805664;80 / 254;81;10;20;False
+2;le450_25b;20.0000479221344;450 / 8263;451;28;20;False
+3;myciel3;0.003984212875366211;11 / 20;12;4;20;True
+4;myciel4;1.2489945888519287;23 / 71;24;5;20;True
+5;myciel5;20.000085592269897;47 / 236;48;6;20;False
+6;myciel6;20.000699281692505;95 / 755;96;12;20;False
+7;myciel7;20.000282287597656;191 / 2360;192;12;20;False
+8;queen13_13;20.0012149810791;169 / 3328;170;25;20;False
+9;toy_chain;0.0;5 / 4;6;2;20;True
+10;toy_cycle;0.0;5 / 5;6;2;20;True
+11;toy_triangle;0.0010023117065429688;3 / 3;;3;20;True
