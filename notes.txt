@@ -31,3 +31,7 @@ On peut fixer couleur du premier noeud, ça ne pose jamais de problème.
 
 Faire de maj le domain de la dernière variable (dans le backtrack / CSP) et de changer arc consistance pour faire que sur
 les contraintes liées à ta last variable la last variable.
+
+Heuristique ? Faire AC3 que sur contraintes liées à la dernière var ajoutée au state au départ ? En fait ok pourvu de bien le faire
+en chaque noeud a priori.
+Aussi dans AC3 pas besoin de checker une var si elle est instanciée.

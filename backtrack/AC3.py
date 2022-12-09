@@ -64,18 +64,34 @@ def restrict_domain_with_constraint(
 
 
 def AC3_current_state(
-    csp_instance: CSP, shrinking_operations: dict, domains_last_valid_index: list
+    csp_instance: CSP,
+    state: dict,
+    shrinking_operations: dict,
+    domains_last_valid_index: list,
+    last_variable_index: int,
 ) -> bool:
     """
     This function performs arc consistency by the AC3 algorithm in place and returns a
     boolean stating wether it emptied a domain.
     """
-    # Store the variables couples to be tested, at first these are all the ones for which
-    # a constraint exists. We use a set to avoid duplicates
-    to_be_tested = set(csp_instance.constraints.keys())
+    # Store the variables couples to be tested. We use a set to avoid duplicates
+
+    if last_variable_index is None:  # root node
+        to_be_tested = set(csp_instance.constraints.keys())
+    else:  # If we have added a value to state, propagate from there, meaning attempt to cut its neighbours
+        to_be_tested = {
+            (linked_variable_index, last_variable_index)
+            for linked_variable_index in csp_instance.variable_is_constrained_by[
+                last_variable_index
+            ]
+        }
 
     while len(to_be_tested) > 0:
         (index_variable_1, index_variable_2) = to_be_tested.pop()
+        # No need to work if the first variable is already instantiated, cutting its domain yields nothing
+        if state.get(index_variable_1, None) is not None:
+            continue
+
         constraint: Constraint = csp_instance.constraints[
             (index_variable_1, index_variable_2)
         ]
