@@ -10,6 +10,7 @@ from .variables_choosing_algorithms import (
     naive_variable_choosing,
 )
 from .values_ordering_algorithms import naive_values_ordering
+from constants import VariableValue
 
 
 class BacktrackClass:
@@ -126,6 +127,17 @@ class BacktrackClass:
             ]
         return
 
+    def _revert_last_variable_domain(
+        self,
+        csp_instance: CSP,
+        last_variable_index: int,
+        last_variable_domain_first_value: VariableValue,
+        last_variable_domain_size: int,
+    ) -> None:
+        csp_instance.domains[last_variable_index][0] = last_variable_domain_first_value
+        self.domains_last_valid_index[last_variable_index] = last_variable_domain_size
+        return
+
     def _backtrack(
         self, csp_instance: CSP, state: dict, last_variable_index: int = None
     ) -> Tuple[bool, dict]:
@@ -148,8 +160,6 @@ class BacktrackClass:
         if self.time_limit > 0 and self.run_time >= self.time_limit:
             return False, state
 
-        shrinking_operations: dict = dict()
-
         # Check if a constraint is invalidated by the new state
         if not self._check_if_new_state_is_valid(
             csp_instance=csp_instance,
@@ -162,18 +172,40 @@ class BacktrackClass:
         if len(state) == len(csp_instance.variables):
             return self.leaf_evaluation_method(state), state
 
+        if last_variable_index is not None:
+            last_variable_domain_first_value = csp_instance.domains[
+                last_variable_index
+            ][0]
+            last_variable_domain_size = self.domains_last_valid_index[
+                last_variable_index
+            ]
+
+            last_variable_value = state[last_variable_index]
+            csp_instance.domains[last_variable_index][0] = last_variable_value
+            self.domains_last_valid_index[last_variable_index] = 0
+
+        shrinking_operations: dict = dict()
         # Use arc consistency if asked
         if self.use_arc_consistency:
             emptied_a_domain = AC3_current_state(
                 csp_instance=csp_instance,
+                state=state,
                 shrinking_operations=shrinking_operations,
                 domains_last_valid_index=self.domains_last_valid_index,
+                last_variable_index=last_variable_index,
             )
             if emptied_a_domain:
                 self._revert_shrinking_operations(
                     csp_instance=csp_instance,
                     shrinking_operations=shrinking_operations,
                 )
+                if last_variable_index is not None:
+                    self._revert_last_variable_domain(
+                        csp_instance=csp_instance,
+                        last_variable_index=last_variable_index,
+                        last_variable_domain_first_value=last_variable_domain_first_value,
+                        last_variable_domain_size=last_variable_domain_size,
+                    )
                 return False, state
 
         # Use forward checking if asked
@@ -190,20 +222,26 @@ class BacktrackClass:
                     csp_instance=csp_instance,
                     shrinking_operations=shrinking_operations,
                 )
+                if last_variable_index is not None:
+                    self._revert_last_variable_domain(
+                        csp_instance=csp_instance,
+                        last_variable_index=last_variable_index,
+                        last_variable_domain_first_value=last_variable_domain_first_value,
+                        last_variable_domain_size=last_variable_domain_size,
+                    )
                 return False, state
 
         # Otherwise, choose a new variable to add to state
-        last_variable_index = self.next_variable_choosing_method(
+        new_variable_index = self.next_variable_choosing_method(
             csp_instance=csp_instance,
             state=state,
             domains_last_valid_index=self.domains_last_valid_index,
         )
         # Compute the order in which to test the possible values
-        # TODO handle the last variable index here better
         new_variable_values_order = self.next_values_ordering_method(
             csp_instance=csp_instance,
-            last_variable_index=last_variable_index,
-            domain_last_valid_index=self.domains_last_valid_index[last_variable_index],
+            last_variable_index=new_variable_index,
+            domain_last_valid_index=self.domains_last_valid_index[new_variable_index],
         )
 
         for new_variable_possible_value in new_variable_values_order:
@@ -211,12 +249,12 @@ class BacktrackClass:
             # TODO this copy could probably be removed by removing last added value in the dict
             # when finding an invalid state.
             new_state = state.copy()
-            new_state.update({last_variable_index: new_variable_possible_value})
+            new_state.update({new_variable_index: new_variable_possible_value})
 
             child_result, child_state = self._backtrack(
                 csp_instance=csp_instance,
                 state=new_state,
-                last_variable_index=last_variable_index,
+                last_variable_index=new_variable_index,
             )
             if child_result:
                 # If a sub node has a solution, go back up and return true
@@ -226,6 +264,13 @@ class BacktrackClass:
         if self.use_forward_checking or self.use_arc_consistency:
             self._revert_shrinking_operations(
                 csp_instance=csp_instance, shrinking_operations=shrinking_operations
+            )
+        if last_variable_index is not None:
+            self._revert_last_variable_domain(
+                csp_instance=csp_instance,
+                last_variable_index=last_variable_index,
+                last_variable_domain_first_value=last_variable_domain_first_value,
+                last_variable_domain_size=last_variable_domain_size,
             )
         # Then return false
         return False, state
