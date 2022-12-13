@@ -141,6 +141,8 @@ class BackjumpClass:
     def compute_jump(
         self, csp_instance: CSP, order: list, relevant_variables: set
     ) -> int:
+        if not (order):
+            return 1
         if csp_instance.variable_is_constrained_by is None:
             raise NameError("csp.instance.variable_is_constrainedy is None")
         relevant_ancestors = set()
@@ -152,7 +154,7 @@ class BackjumpClass:
         for i in range(1, n + 1):
             if order[n - i] in relevant_ancestors:
                 return i
-        raise NameError("Error in jump computation")
+        raise NameError("Error in jump computating")
 
     def _backjump(
         self,
