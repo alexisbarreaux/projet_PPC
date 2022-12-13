@@ -138,16 +138,28 @@ class BackjumpClass:
         self.domains_last_valid_index[last_variable_index] = last_variable_domain_size
         return
 
-    def _compute_jump(csp_instance: CSP, order : list, relevant_variables: set) -> int:
+    def compute_jump(
+        self, csp_instance: CSP, order: list, relevant_variables: set
+    ) -> int:
+        if csp_instance.variable_is_constrained_by is None:
+            raise NameError("csp.instance.variable_is_constrainedy is None")
         relevant_ancestors = set()
         for variable in relevant_variables:
-            relevant_ancestors = relevant_ancestors.union(set(csp_instance.variable_is_constrained_by[variable]))
+            relevant_ancestors = relevant_ancestors.union(
+                set(csp_instance.variable_is_constrained_by[variable])
+            )
         n = len(order)
         for i in range(1, n + 1):
-            if order[n - i] in relevant_ancestors: return i
+            if order[n - i] in relevant_ancestors:
+                return i
+        raise NameError("Error in jump computation")
 
     def _backjump(
-        self, csp_instance: CSP, state: dict, order: list, last_variable_index: int = None
+        self,
+        csp_instance: CSP,
+        state: dict,
+        order: list,
+        last_variable_index: int = None,
     ) -> Tuple[bool, dict, int, set]:
         """
         This backjump will return back the first possible solution.
@@ -164,8 +176,8 @@ class BackjumpClass:
         """
         self.nodes += 1
 
-        #The set of relevant dead-end variables is initialized at the start of the session
-        relevant_variables = set({})
+        # The set of relevant dead-end variables is initialized at the start of the session
+        relevant_variables = set()
 
         # If runtime is exceeded, return with False as we don't know if the node is valid or not.
         self._update_runtime()
@@ -179,7 +191,11 @@ class BackjumpClass:
             last_variable_index=last_variable_index,
         ):
             relevant_variables = set({last_variable_index})
-            jump = self._compute_jump(csp_instance = csp_instance, order = order, relevant_variables = relevant_variables)
+            jump = self.compute_jump(
+                csp_instance=csp_instance,
+                order=order,
+                relevant_variables=relevant_variables,
+            )
             return False, state, jump, relevant_variables
 
         # If the current state is a leaf, evaluate it
@@ -221,7 +237,11 @@ class BackjumpClass:
                         last_variable_domain_size=last_variable_domain_size,
                     )
                 relevant_variables = set({last_variable_index})
-                jump = self._compute_jump(csp_instance = csp_instance, order = order, relevant_variables = relevant_variables)
+                jump = self.compute_jump(
+                    csp_instance=csp_instance,
+                    order=order,
+                    relevant_variables=relevant_variables,
+                )
                 return False, state, jump, relevant_variables
 
         # Use forward checking if asked
@@ -246,7 +266,11 @@ class BackjumpClass:
                         last_variable_domain_size=last_variable_domain_size,
                     )
                 relevant_variables = set({last_variable_index})
-                jump = self._compute_jump(csp_instance = csp_instance, order = order, relevant_variables = relevant_variables)
+                jump = self.compute_jump(
+                    csp_instance=csp_instance,
+                    order=order,
+                    relevant_variables=relevant_variables,
+                )
                 return False, state, jump, relevant_variables
 
         # Otherwise, choose a new variable to add to state
@@ -271,16 +295,21 @@ class BackjumpClass:
             new_state = state.copy()
             new_state.update({new_variable_index: new_variable_possible_value})
 
-            child_result, child_state, child_jump, child_relevant_variables = self._backjump(
+            (
+                child_result,
+                child_state,
+                child_jump,
+                child_relevant_variables,
+            ) = self._backjump(
                 csp_instance=csp_instance,
                 state=new_state,
-                order = order,
+                order=order,
                 last_variable_index=new_variable_index,
             )
             if child_result:
                 # If a sub node has a solution, go back up and return true
                 return True, child_state, None, None
-            
+
             relevant_variables = relevant_variables.union(child_relevant_variables)
 
             if child_jump > 1:
@@ -288,7 +317,8 @@ class BackjumpClass:
                 # If no sub nodes was true, undo domains modifications
                 if self.use_forward_checking or self.use_arc_consistency:
                     self._revert_shrinking_operations(
-                        csp_instance=csp_instance, shrinking_operations=shrinking_operations
+                        csp_instance=csp_instance,
+                        shrinking_operations=shrinking_operations,
                     )
                 if last_variable_index is not None:
                     self._revert_last_variable_domain(
@@ -316,7 +346,11 @@ class BackjumpClass:
                 last_variable_domain_size=last_variable_domain_size,
             )
         # Then return false
-        jump = self._compute_jump(csp_instance = csp_instance, order = order, relevant_variables = relevant_variables)
+        jump = self.compute_jump(
+            csp_instance=csp_instance,
+            order=order,
+            relevant_variables=relevant_variables,
+        )
         return False, state, jump, relevant_variables
 
     def run_backjump(self, csp_instance: CSP) -> Tuple[bool, dict]:
@@ -329,8 +363,8 @@ class BackjumpClass:
             len(csp_instance.domains[i]) - 1 for i in range(len(csp_instance.domains))
         ]
 
-        found_solution, indexes_state = self._backjump(
-            csp_instance=csp_instance, state=dict(), order = list()
+        found_solution, indexes_state, _, _ = self._backjump(
+            csp_instance=csp_instance, state=dict(), order=list()
         )
         readable_state = dict()
         for index in indexes_state:
