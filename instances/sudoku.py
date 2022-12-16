@@ -13,11 +13,10 @@ def display_grid(state: dict, grid_edge_size: int = 9) -> list:
     Used to display the resutl of a backtrack on a sudoku instance.
     """
     sudoku_grid = []
-    for i in range(grid_edge_size):
-        sudoku_grid.append(
-            [state[i * grid_edge_size + j] for j in range(grid_edge_size)]
-        )
-    print(sudoku_grid)
+    for i in range(1, grid_edge_size + 1):
+        row = [state[f"x_{i}_{j}"] for j in range(1, grid_edge_size + 1)]
+        sudoku_grid.append(row)
+        print(row)
     return sudoku_grid
 
 
@@ -90,22 +89,25 @@ def sudoku_problem(instance_path: Path, block_edge_size: int = 3) -> Tuple[CSP]:
                 )
 
     # Constraints on blocks
-    for block_top in range(block_edge_size):
-        for block_left in range(block_edge_size):
-            block_start = block_top * grid_edge_size + block_left
-            for i in range(grid_edge_size):
-                current_cell = block_start + (i // block_edge_size) * grid_edge_size + i
-                for j in range(i + 1, grid_edge_size):
-                    current_cell = (
-                        block_start + (j // block_edge_size) * grid_edge_size + j
+    for block_number in range(grid_edge_size):
+        block_start = (
+            (block_number - 1) % block_edge_size
+        ) * block_edge_size + block_edge_size * grid_edge_size * (
+            block_number // block_edge_size
+        )
+        for i in range(grid_edge_size):
+            current_cell = block_start + (i // block_edge_size) * grid_edge_size + i % 3
+            for j in range(i + 1, grid_edge_size):
+                other_cell = (
+                    block_start + (j // block_edge_size) * grid_edge_size + j % 3
+                )
+                # Here we might have already added a constraint for the pair (i,j)
+                if constraints.get((current_cell, other_cell)) is None:
+                    constraints.update(
+                        {
+                            (current_cell, other_cell): alldiff,
+                            (other_cell, current_cell): alldiff,
+                        }
                     )
-                    # Here we might have already added a constraint for the pair (i,j)
-                    if constraints.get((current_cell, other_cell)) is None:
-                        constraints.update(
-                            {
-                                (current_cell, other_cell): alldiff,
-                                (other_cell, current_cell): alldiff,
-                            }
-                        )
 
     return CSP(variables=variables, domains=domains, constraints=constraints)
