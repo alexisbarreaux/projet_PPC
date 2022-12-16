@@ -52,6 +52,9 @@ class CSP:
         self.variables_to_index_dict = {
             variables[index]: index for index in range(len(variables))
         }
+        self.variable_is_constrained_by = {
+            index: set() for index in range(len(variables))
+        }
         self._update_constrained_information_with_constraints(constraints=constraints)
 
     def _update_constrained_information_with_single_constraint(

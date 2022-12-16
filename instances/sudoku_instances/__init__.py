@@ -42,7 +42,7 @@ SUDOKU_EXPERT_INSTANCES = [
     "expert9.txt",
 ]
 SUDOKU_ALL_INSTANCES = (
-    ["empty.txt"]
+    ["almost_full.txt"]
     + SUDOKU_EASY_INSTANCES
     + SUDOKU_INTERMEDIATE_INSTANCES
     + SUDOKU_EXPERT_INSTANCES
