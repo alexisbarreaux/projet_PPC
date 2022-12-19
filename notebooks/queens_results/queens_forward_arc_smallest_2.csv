@@ -1,0 +1,24 @@
+;instance;nodes;time;result
+0;3 queens;1;0.0;False
+1;8 queens;19;0.002;True
+2;13 queens;117;0.039;True
+3;18 queens;23;0.03;True
+4;23 queens;47;0.068;True
+5;28 queens;88;0.155;True
+6;33 queens;253;0.317;True
+7;38 queens;51;0.546;True
+8;43 queens;62;0.767;True
+9;48 queens;58;1.084;True
+10;53 queens;60;1.864;True
+11;58 queens;65;5.712;True
+12;63 queens;70;4.4;True
+13;68 queens;69;6.805;True
+14;73 queens;105;5.2239;True
+15;78 queens;88;7.227;True
+16;83 queens;180;8.979;True
+17;88 queens;434;11.933;True
+18;93 queens;403;15.056;True
+19;98 queens;102;19.986;True
+20;103 queens;193;23.032;True
+21;108 queens;131;27.8332;True
+22;113 queens;170;35.112;True

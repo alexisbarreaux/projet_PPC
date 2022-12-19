@@ -29,3 +29,19 @@ def smallest_domain_variable_choosing(
         for i in range(len(csp_instance.variables))
     ]
     return np.argmin(domains_sizes)
+
+
+def random_variable_choosing(
+    csp_instance: CSP, state: dict, domains_last_valid_index: list
+) -> Variable:
+    """
+    Here, we choose the variable randomly in the ones currently choosable.
+    """
+    left_variables = [
+        i for i in range(len(csp_instance.variables)) if state.get(i, None) is None
+    ]
+    return (
+        left_variables[0]
+        if len(left_variables) == 1
+        else left_variables[np.random.randint(0, len(left_variables))]
+    )
