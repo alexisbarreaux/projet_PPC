@@ -1,9 +1,9 @@
-;instance;nodes;time;result
-0;3 queens;19;0.0;False
-1;6 queens;172;0.001993417739868164;True
-2;9 queens;334;0.009779214859008789;True
-3;12 queens;3067;0.1067345142364502;True
-4;15 queens;20281;0.34989237785339355;True
-5;18 queens;743230;13.701235294342041;True
-6;21 queens;179593;3.390075922012329;True
-7;24 queens;9878317;169.59642505645752;True
+;instance;nodes;time;Time/node;result
+0;3 queens;19;0,00;0;False
+1;6 queens;172;0,00;1,15896E-05;True
+2;9 queens;334;0,01;2,92791E-05;True
+3;12 queens;3067;0,11;3,4801E-05;True
+4;15 queens;20281;0,35;1,72522E-05;True
+5;18 queens;743230;13,70;1,84347E-05;True
+6;21 queens;179593;3,39;1,88764E-05;True
+7;24 queens;9878317;169,60;1,71686E-05;True
