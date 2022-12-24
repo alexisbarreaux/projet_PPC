@@ -78,6 +78,9 @@ def AC3_current_state(
 
     if last_variable_index is None:  # root node
         to_be_tested = set(csp_instance.constraints.keys())
+        # Might be empty
+        if not to_be_tested:
+            return False
     else:  # If we have added a value to state, propagate from there, meaning attempt to cut its neighbours
         to_be_tested = {
             (linked_variable_index, last_variable_index)
