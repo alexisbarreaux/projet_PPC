@@ -1,8 +1,9 @@
 /*********************************************
  * OPL 22.1.0.0 Model
  * Author: alexi
- * Creation Date: 26 déc. 2022 at 11:01:10
+ * Creation Date: 26 déc. 2022 at 11:52:05
  *********************************************/
+
  using CP;
  
  // Data
@@ -23,9 +24,11 @@ tuple Offset {
  // Decision variable, each variable stating what value is the frequency of the 
  // associated transmitter
  dvar int transmitterFrequency[transmitters] in frequencies;
- 
+
+minimize max(transmitter in transmitters) transmitterFrequency[transmitter];
+
  // Constraints
-  constraints {
+constraints {
     // Parity constraint
     forall(transmitter in transmitters)
       (transmitterFrequency[transmitter] + transmitter) mod 2 == 0;   

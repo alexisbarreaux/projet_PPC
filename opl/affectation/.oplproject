@@ -6,10 +6,20 @@
         		
         <config default="true" name="affectation" category="opl">
             			
-            <ref name="affectation2.mod" type="model">
+            <ref name="affectation.mod" type="model">
 			</ref>
             			
-            <ref name="affectation2.dat" type="data">
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_min" category="opl">
+            			
+            <ref name="affectation_min.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
 			</ref>
             		
         </config>
