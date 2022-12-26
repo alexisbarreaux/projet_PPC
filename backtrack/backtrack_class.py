@@ -38,6 +38,7 @@ class BacktrackClass:
     # Booleans for the added layers of consistency and prospective search
     use_arc_consistency: bool
     use_forward_checking: bool
+    arc_consistency_frequency: int
     # Statistics attributes
     nodes: int = 0
     # Variables that need to be reset
@@ -54,11 +55,13 @@ class BacktrackClass:
         leaf_evaluation_method: Callable = None,
         use_arc_consistency: bool = False,
         use_forward_checking: bool = False,
+        arc_consistency_frequency: int = 1,
         time_limit: int = -1,
     ) -> None:
         self.next_variable_choosing_method = next_variable_choosing_method
         self.next_values_ordering_method = next_values_ordering_method
         self.use_arc_consistency = use_arc_consistency
+        self.arc_consistency_frequency = arc_consistency_frequency
         self.use_forward_checking = use_forward_checking
         self.time_limit = time_limit
         # By default always return True in a valid leaf
@@ -186,7 +189,10 @@ class BacktrackClass:
 
         shrinking_operations: dict = dict()
         # Use arc consistency if asked
-        if self.use_arc_consistency:
+        if (
+            self.use_arc_consistency
+            and (self.nodes % self.arc_consistency_frequency) == 0
+        ):
             emptied_a_domain = AC3_current_state(
                 csp_instance=csp_instance,
                 state=state,

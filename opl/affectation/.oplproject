@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ASCII"?><project>
+    	
+    <version>1.0</version>
+    	
+    <configs>
+        		
+        <config default="false" name="affectation" category="opl">
+            			
+            <ref name="affectation.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_min" category="opl">
+            			
+            <ref name="affectation_min.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_ten" category="opl">
+            			
+            <ref name="affectation_ten.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
+        		
+        <config default="true" name="affectation_freq" category="opl">
+            			
+            <ref name="affectation_frequence.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
+        	
+    </configs>
+    	
+
+</project>
