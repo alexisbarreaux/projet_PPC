@@ -154,7 +154,7 @@ class BackjumpClass:
         for i in range(1, n + 1):
             if order[n - i] in relevant_ancestors:
                 return i
-        raise NameError("Error in jump computating")
+        raise NameError("Error in jump computation")
 
     def _backjump(
         self,
@@ -174,8 +174,11 @@ class BackjumpClass:
         The state is depicted as a dict, in which keys are variables idexes and values the value of
         each variable. A variable which currently holds no value is not in the dict.
 
-        It returns a boolean and the current state.
+        It returns a boolean, the current state, a jump to do and a set of relevant dead end variables.
         """
+
+        # print(len(order))
+
         self.nodes += 1
 
         # The set of relevant dead-end variables is initialized at the start of the session
@@ -184,7 +187,7 @@ class BackjumpClass:
         # If runtime is exceeded, return with False as we don't know if the node is valid or not.
         self._update_runtime()
         if self.time_limit > 0 and self.run_time >= self.time_limit:
-            return False, state, None, None
+            return False, state, len(csp_instance.variables), {}
 
         # Check if a constraint is invalidated by the new state
         if not self._check_if_new_state_is_valid(
@@ -192,13 +195,14 @@ class BackjumpClass:
             state=state,
             last_variable_index=last_variable_index,
         ):
-            relevant_variables = set({last_variable_index})
+            """relevant_variables = set({last_variable_index})
             jump = self.compute_jump(
                 csp_instance=csp_instance,
                 order=order,
                 relevant_variables=relevant_variables,
             )
-            return False, state, jump, relevant_variables
+            return False, state, jump, relevant_variables"""
+            return False, state, 1, {}
 
         # If the current state is a leaf, evaluate it
         if len(state) == len(csp_instance.variables):
@@ -248,14 +252,14 @@ class BackjumpClass:
 
         # Use forward checking if asked
         if self.use_forward_checking:
-            emptied_a_domain = forward_checking_current_state(
+            emptied_variable = forward_checking_current_state(
                 csp_instance=csp_instance,
                 state=state,
                 last_variable_index=last_variable_index,
                 shrinking_operations=shrinking_operations,
                 domains_last_valid_index=self.domains_last_valid_index,
             )
-            if emptied_a_domain:
+            if emptied_variable is not None:
                 self._revert_shrinking_operations(
                     csp_instance=csp_instance,
                     shrinking_operations=shrinking_operations,
@@ -267,12 +271,15 @@ class BackjumpClass:
                         last_variable_domain_first_value=last_variable_domain_first_value,
                         last_variable_domain_size=last_variable_domain_size,
                     )
-                relevant_variables = set({last_variable_index})
-                jump = self.compute_jump(
+                relevant_variables = set({emptied_variable})
+                # relevant_variables = {}
+                """jump = self.compute_jump(
                     csp_instance=csp_instance,
                     order=order,
                     relevant_variables=relevant_variables,
                 )
+                print("jump : ", jump)"""
+                jump = 1
                 return False, state, jump, relevant_variables
 
         # Otherwise, choose a new variable to add to state
@@ -288,12 +295,15 @@ class BackjumpClass:
             domain_last_valid_index=self.domains_last_valid_index[new_variable_index],
         )
 
+        order.append(new_variable_index)
+
         for new_variable_possible_value in new_variable_values_order:
             # Copy the state dict to be able to call recurisvely without issue
             # TODO this copy could probably be removed by removing last added value in the dict
             # when finding an invalid state.
-            if last_variable_index is not None:
-                order.append(last_variable_index)
+            """if last_variable_index is not None:
+            order.append(last_variable_index)"""
+
             new_state = state.copy()
             new_state.update({new_variable_index: new_variable_possible_value})
 
@@ -329,11 +339,13 @@ class BackjumpClass:
                         last_variable_domain_first_value=last_variable_domain_first_value,
                         last_variable_domain_size=last_variable_domain_size,
                     )
-                if last_variable_index is not None:
-                    order.pop()
-                return False, state, child_jump - 1, child_relevant_variables
-            if last_variable_index is not None:
+                """if last_variable_index is not None:
+                    order.pop()"""
                 order.pop()
+                return False, state, child_jump - 1, child_relevant_variables
+            """if last_variable_index is not None:
+                order.pop()"""
+        order.pop()
 
         # If no sub nodes was true, undo domains modifications
         if self.use_forward_checking or self.use_arc_consistency:
@@ -348,17 +360,20 @@ class BackjumpClass:
                 last_variable_domain_size=last_variable_domain_size,
             )
         # Then return false
+        relevant_variables = relevant_variables.union({new_variable_index})
         jump = self.compute_jump(
             csp_instance=csp_instance,
             order=order,
             relevant_variables=relevant_variables,
         )
+        # print("coucou : ", jump)
         return False, state, jump, relevant_variables
 
     def run_backjump(self, csp_instance: CSP) -> Tuple[bool, dict]:
         """
         Runs the backjump and creates a human readable state to return.
         """
+
         self._reset_statistics_variables()
 
         self.domains_last_valid_index = [
