@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings version="2">
+  <category name="cp">
+    <setting name="defaultinferencelevel" value="Low"/>
+    <setting name="alldiffinferencelevel" value="Low"/>
+    <setting name="countinferencelevel" value="Low"/>
+    <setting name="allmindistanceinferencelevel" value="Low"/>
+    <setting name="elementinferencelevel" value="Low"/>
+    <setting name="precedenceinferencelevel" value="Low"/>
+    <setting name="intervalsequenceinferencelevel" value="Low"/>
+    <setting name="nooverlapinferencelevel" value="Low"/>
+    <setting name="cumulfunctioninferencelevel" value="Low"/>
+    <setting name="statefunctioninferencelevel" value="Low"/>
+  </category>
+</settings>

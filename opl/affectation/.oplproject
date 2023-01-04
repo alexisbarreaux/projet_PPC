@@ -43,6 +43,68 @@
 			</ref>
             		
         </config>
+        		
+        <config default="false" name="affectation_param_low_inf" category="opl">
+            			
+            <ref name="affectation_min.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            			
+            <ref name="affectation_param_low_inf.ops" type="setting">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_param_high_inf" category="opl">
+            			
+            <ref name="affectation_param_high_inf.ops" type="setting">
+			</ref>
+            			
+            <ref name="affectation_min.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_param_no_presolve" category="opl">
+            			
+            <ref name="affectation_min.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            			
+            <ref name="affectation_param_no_presolve.ops" type="setting">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_param_search_type" category="opl">
+            			
+            <ref name="affectation_min.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            			
+            <ref name="affectation_param_search_type.ops" type="setting">
+			</ref>
+            		
+        </config>
+        		
+        <config default="false" name="affectation_search" category="opl">
+            			
+            <ref name="affectation_search.mod" type="model">
+			</ref>
+            			
+            <ref name="affectation.dat" type="data">
+			</ref>
+            		
+        </config>
         	
     </configs>
     	
