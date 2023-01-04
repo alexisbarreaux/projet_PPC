@@ -39,10 +39,9 @@ constraints {
 
 // Printing results
 execute {
-  writeln ("Results : ");
-  for(var transmitter in transmitters) {
-      writeln("Transmitter " + transmitter + " has frequency " + transmitterFrequency[transmitter]); 
- }  
+  write ("Results : ");
+  writeln(thisOplModel.transmitterFrequency);
+
  	writeln("Offsets")  
   for(var offset in offsets){
     writeln(offset.firstTransmitter + " " + offset.secondTransmitter + " " + 

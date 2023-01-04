@@ -54,13 +54,12 @@ main {
      n++;
      currentMax = 0;
    	 write(n + "th solution. ");
+   	 writeln(currentModel.transmitterFrequency);
    	 for (var transmitter in currentModel.transmitterFrequency){
-       write(currentModel.transmitterFrequency[transmitter]+  ",");
        if(currentModel.transmitterFrequency[transmitter] > currentMax){
          currentMax = currentModel.transmitterFrequency[transmitter];
        }
   }    
-       writeln();
   
      // Decrement max frequency
      if(maxFreq <0 || maxFreq >= currentMax){
@@ -72,5 +71,6 @@ main {
 		currentModel.addDataSource(data);
 		currentModel.generate();
      }
+       writeln();
    }   
 }

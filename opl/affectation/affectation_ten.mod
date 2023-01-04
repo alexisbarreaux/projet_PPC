@@ -41,9 +41,8 @@ main {
    cp.startNewSearch();
    var  n = 1;
    while (cp.next() && n <= 10) { 
-   	 write(n + "th solution. ");
-   	 for (var transmitter in thisOplModel.transmitterFrequency)
-                       write(thisOplModel.transmitterFrequency[transmitter]+  ",");
+   	 write(n + "th solution.");
+   	 write(thisOplModel.transmitterFrequency);
      n++;
      writeln()
     // master.oplModel.postProcess();
