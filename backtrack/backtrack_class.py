@@ -251,15 +251,11 @@ class BacktrackClass:
         )
 
         for new_variable_possible_value in new_variable_values_order:
-            # Copy the state dict to be able to call recurisvely without issue
-            # TODO this copy could probably be removed by removing last added value in the dict
-            # when finding an invalid state.
-            new_state = state.copy()
-            new_state.update({new_variable_index: new_variable_possible_value})
+            state.update({new_variable_index: new_variable_possible_value})
 
             child_result, child_state = self._backtrack(
                 csp_instance=csp_instance,
-                state=new_state,
+                state=state,
                 last_variable_index=new_variable_index,
             )
             if child_result:
@@ -278,6 +274,8 @@ class BacktrackClass:
                 last_variable_domain_first_value=last_variable_domain_first_value,
                 last_variable_domain_size=last_variable_domain_size,
             )
+        # Remove new index if no successful child was found.
+        state.pop(new_variable_index)
         # Then return false
         return False, state
 
