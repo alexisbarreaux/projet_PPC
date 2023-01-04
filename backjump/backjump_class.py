@@ -165,10 +165,8 @@ class BackjumpClass:
     ) -> Tuple[bool, int, set]:
         """
         This backjump will return back the first possible solution.
-        A backjump takes a CSP, a current state (variables that currently hold values) and a list (order) which is the ordered list of the variables that hold values. We also put the
+        A backjump takes a CSP, a current state (variables that currently hold values) and an ordered list of the variables that hold values. We also put the
         last added variable in last_variable because it makes check violations easier.
-
-
 
         The backjump first checks if the current state is valid, and if not returns False.
         Otherwise it appends a new value for the next variable to the state and moves on recursively.
@@ -176,7 +174,7 @@ class BackjumpClass:
         The state is depicted as a dict, in which keys are variables idexes and values the value of
         each variable. A variable which currently holds no value is not in the dict.
 
-        It returns a boolean, a jump to do and a set of relevant dead end variables.
+        It returns a boolean, a jump and a set of relevant dead end variables.
         """
 
         # print(len(order))
@@ -237,13 +235,7 @@ class BackjumpClass:
                         last_variable_domain_first_value=last_variable_domain_first_value,
                         last_variable_domain_size=last_variable_domain_size,
                     )
-                relevant_variables = set({last_variable_index})
-                jump = self.compute_jump(
-                    csp_instance=csp_instance,
-                    order=order,
-                    relevant_variables=relevant_variables,
-                )
-                return False, jump, relevant_variables
+                return False, 1, {}
 
         # Use forward checking if asked
         if self.use_forward_checking:
@@ -318,7 +310,7 @@ class BackjumpClass:
                 order.pop()
                 return False, child_jump - 1, child_relevant_variables
 
-            state.pop(new_variable_index)
+        state.pop(new_variable_index)
 
         order.pop()
 
