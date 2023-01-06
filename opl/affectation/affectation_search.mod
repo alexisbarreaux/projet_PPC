@@ -41,17 +41,17 @@ constraints {
 main
  {
     var f = cp.factory;
-    var small_var_random_value = f.searchPhase(thisOplModel.transmitterFrequency,f.selectSmallest(f.domainSize()),  f.selectRandomValue());
-    var depth_random = f.searchPhase(thisOplModel.transmitterFrequency,f.selectSmallest(f.varIndex(thisOplModel.transmitterFrequency)),  f.selectRandomValue());
-    var depth_smallest= f.searchPhase(thisOplModel.transmitterFrequency,f.selectSmallest(f.varIndex(thisOplModel.transmitterFrequency)),  f.selectSmallest(f.value()));
+    var smallest_domain_var_random_value = f.searchPhase(thisOplModel.transmitterFrequency,f.selectSmallest(f.domainSize()),  f.selectRandomValue());
+    var smallest_var_random = f.searchPhase(thisOplModel.transmitterFrequency,f.selectSmallest(f.varIndex(thisOplModel.transmitterFrequency)),  f.selectRandomValue());
+    var smallest_var= f.searchPhase(thisOplModel.transmitterFrequency,f.selectSmallest(f.varIndex(thisOplModel.transmitterFrequency)),  f.selectSmallest(f.value()));
     var small_var_smallest_value= f.searchPhase(thisOplModel.transmitterFrequency, f.selectSmallest(f.domainSize()),  f.selectSmallest(f.value()));
-    cp.setSearchPhases(small_var_smallest_value); 
+    cp.setSearchPhases(smallest_domain_var_random_value); 
  
    thisOplModel.generate();
    var n=0;
    var nMax = 10;
    cp.param.SearchType="DepthFirst";
-   cp.param.Workers=1;
+   //cp.param.Workers=1;
    cp.solve()
   thisOplModel.postProcess();
  } 

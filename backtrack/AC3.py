@@ -69,6 +69,7 @@ def AC3_current_state(
     shrinking_operations: dict,
     domains_last_valid_index: list,
     last_variable_index: int,
+    frequency: int = 1,
 ) -> bool:
     """
     This function performs arc consistency by the AC3 algorithm in place and returns a
@@ -82,12 +83,25 @@ def AC3_current_state(
         if not to_be_tested:
             return False
     else:  # If we have added a value to state, propagate from there, meaning attempt to cut its neighbours
-        to_be_tested = {
-            (linked_variable_index, last_variable_index)
-            for linked_variable_index in csp_instance.variable_is_constrained_by[
-                last_variable_index
-            ]
-        }
+        if frequency == 1:
+            to_be_tested = {
+                (linked_variable_index, last_variable_index)
+                for linked_variable_index in csp_instance.variable_is_constrained_by[
+                    last_variable_index
+                ]
+            }
+        else:
+            indices_to_use = state.keys[-frequency:]
+            to_be_tested = set()
+            for index in indices_to_use:
+                to_be_tested.union(
+                    {
+                        (linked_variable_index, index)
+                        for linked_variable_index in csp_instance.variable_is_constrained_by[
+                            index
+                        ]
+                    }
+                )
 
     while len(to_be_tested) > 0:
         (index_variable_1, index_variable_2) = to_be_tested.pop()
