@@ -162,11 +162,12 @@ class BackjumpClass:
     def learn_NoGood(
         self, csp_instance: CSP, state: dict, nogood_variables: list, nogood_index: int
     ) -> None:
+        print("yay")
         n = len(csp_instance.variables)
         new_variable = f"nogood_{str(nogood_index)}"
         nogood = tuple([state[x] for x in nogood_variables])
         new_domain = list(product(*[csp_instance.domains[x] for x in nogood_variables]))
-        new_domain.remove(nogood)
+        """new_domain.remove(nogood)
 
         csp_instance.variables.append(new_variable)
         csp_instance.domains.append(new_domain)
@@ -185,7 +186,7 @@ class BackjumpClass:
                     (nogood_variables[i], n): constraint_1,
                     (n, nogood_variables[i]): constraint_2,
                 }
-            )
+            )"""
 
     def _backjump(
         self,
@@ -365,15 +366,16 @@ class BackjumpClass:
             relevant_variables=relevant_variables,
         )
         if jump > 1:
+            print(len(state))
             # Test shallow learning
-            print(self.nogoods)
+            # print(self.nogoods)
             self.nogoods += 1
-            self.learn_NoGood(
+            """self.learn_NoGood(
                 csp_instance=csp_instance,
                 state=state,
                 nogood_variables=list(state.keys()),
                 nogood_index=self.nogoods,
-            )
+            )"""
 
         return False, jump, relevant_variables
 
