@@ -1,6 +1,7 @@
 # Main file for the backjump algorithm.
 from typing import Callable, Tuple
 from time import time
+from itertools import product
 
 from models import CSP
 
@@ -40,6 +41,7 @@ class BackjumpClass:
     use_forward_checking: bool
     # Statistics attributes
     nodes: int = 0
+    nogoods: int = 0
     # Variables that need to be reset
     domains_last_valid_index: list[int]
     # Time variables
@@ -73,6 +75,7 @@ class BackjumpClass:
         Used before each backjump
         """
         self.nodes = 0
+        self.nogoods = 0
         self.start_time = time()
         return
 
@@ -155,6 +158,34 @@ class BackjumpClass:
             if order[n - i] in relevant_ancestors:
                 return i
         raise NameError("Error in jump computation")
+
+    def learn_NoGood(
+        self, csp_instance: CSP, state: dict, nogood_variables: list, nogood_index: int
+    ) -> None:
+        n = len(csp_instance.variables)
+        new_variable = f"nogood_{str(nogood_index)}"
+        nogood = tuple([state[x] for x in nogood_variables])
+        new_domain = list(product(*[csp_instance.domains[x] for x in nogood_variables]))
+        new_domain.remove(nogood)
+
+        csp_instance.variables.append(new_variable)
+        csp_instance.domains.append(new_domain)
+        csp_instance.variables_to_index_dict[new_variable] = n
+        csp_instance.variable_is_constrained_by[n] = set()
+
+        for i in range(len(nogood_variables)):
+            constraint_1 = (
+                lambda a, b, value_var_a, value_var_b: value_var_a == value_var_b[i]
+            )
+            constraint_2 = (
+                lambda a, b, value_var_a, value_var_b: value_var_a[i] == value_var_b
+            )
+            csp_instance.add_constraints_with_indices(
+                {
+                    (nogood_variables[i], n): constraint_1,
+                    (n, nogood_variables[i]): constraint_2,
+                }
+            )
 
     def _backjump(
         self,
@@ -333,7 +364,17 @@ class BackjumpClass:
             order=order,
             relevant_variables=relevant_variables,
         )
-        # print("coucou : ", jump)
+        if jump > 1:
+            # Test shallow learning
+            print(self.nogoods)
+            self.nogoods += 1
+            self.learn_NoGood(
+                csp_instance=csp_instance,
+                state=state,
+                nogood_variables=list(state.keys()),
+                nogood_index=self.nogoods,
+            )
+
         return False, jump, relevant_variables
 
     def run_backjump(self, csp_instance: CSP) -> Tuple[bool, dict]:
