@@ -290,7 +290,6 @@ class BackjumpClass:
                 return True, None, None
 
             relevant_variables = relevant_variables.union(child_relevant_variables)
-
             if child_jump > 1:
 
                 # If no sub nodes was true, undo domains modifications
@@ -333,7 +332,8 @@ class BackjumpClass:
             order=order,
             relevant_variables=relevant_variables,
         )
-        # print("coucou : ", jump)
+        """if jump > 1:
+            print("coucou : ", jump)"""
         return False, jump, relevant_variables
 
     def run_backjump(self, csp_instance: CSP) -> Tuple[bool, dict]:
